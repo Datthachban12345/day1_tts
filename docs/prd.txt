@@ -1,0 +1,381 @@
+PRODUCT REQUIREMENTS DOCUMENT (PRD)
+1. Product Overview
+1.1. Tên sản phẩm
+Hệ thống đặt lịch xem nhà
+1.2. Mục tiêu sản phẩm
+Xây dựng một hệ thống cho phép Customer tìm kiếm bất động sản, xem thông tin nhà và đặt lịch xem nhà vào thời gian mong muốn.
+Sale tiếp nhận và xử lý booking.
+Admin quản lý người dùng, bất động sản và booking.
+1.3. Giá trị chính
+Hệ thống giải quyết quy trình:
+Tìm nhà → Chọn nhà → Chọn thời gian → Đặt lịch → Sale xác nhận → Theo dõi booking
+Mục tiêu của MVP là số hóa quy trình đặt lịch xem nhà cơ bản, thay vì xử lý thủ công qua điện thoại, tin nhắn hoặc spreadsheet.
+________________________________________
+2. Problem Statement
+Quy trình đặt lịch thủ công có thể gây ra:
+•	Customer khó biết thông tin nhà.
+•	Customer phải liên hệ Sale để đặt lịch.
+•	Sale khó quản lý nhiều booking.
+•	Khó theo dõi booking đang Pending, Confirmed hay Cancelled.
+•	Admin khó kiểm soát Property, User và Booking.
+•	Dễ xảy ra nhầm lẫn về thời gian.
+Vấn đề cốt lõi
+Làm thế nào để Customer có thể tự đặt lịch xem nhà và Sale có thể xử lý booking một cách rõ ràng, có trạng thái?
+________________________________________
+3. Product Goals
+MVP Goals
+1.	Customer có thể đăng ký / đăng nhập.
+2.	Customer có thể tìm kiếm và xem Property.
+3.	Customer có thể tạo Booking.
+4.	Customer có thể xem Booking của mình.
+5.	Customer có thể hủy Booking.
+6.	Sale có thể xem Booking được giao.
+7.	Sale có thể Confirm / Reject Booking.
+8.	Sale có thể cập nhật trạng thái Booking.
+9.	Sale có thể quản lý thời gian nhận lịch.
+10.	Admin có thể quản lý User, Property và Booking.
+________________________________________
+4. Non-Goals
+Không triển khai trong MVP:
+•	Thanh toán online.
+•	Hợp đồng mua bán.
+•	Chat realtime.
+•	AI Agent.
+•	Recommendation.
+•	Review / Rating.
+•	Loyalty.
+•	CRM nâng cao.
+•	Route Optimization.
+•	Google Calendar integration.
+•	Notification automation phức tạp.
+Những chức năng này có thể đưa vào Future Scope sau khi MVP được validate.
+________________________________________
+5. User Roles
+5.1. Customer
+Mục tiêu:
+Tìm được căn nhà phù hợp và đặt lịch xem.
+Quyền chính:
+•	Register
+•	Login
+•	Search Property
+•	View Property
+•	Create Booking
+•	View Booking
+•	Cancel Booking
+________________________________________
+5.2. Sale
+Mục tiêu:
+Tiếp nhận và xử lý các lịch xem nhà.
+Quyền chính:
+•	Login
+•	View Booking
+•	View Booking Detail
+•	Confirm Booking
+•	Reject Booking
+•	Cancel Booking
+•	Update Booking Status
+•	Manage Availability
+________________________________________
+5.3. Admin
+Mục tiêu:
+Quản lý dữ liệu và hoạt động của hệ thống.
+Quyền chính:
+•	Manage Users
+•	Manage Properties
+•	Manage Sales
+•	Manage Bookings
+________________________________________
+6. Core User Flow
+Customer Flow
+Login / Register
+       ↓
+     Home
+       ↓
+ Property List
+       ↓
+ Property Detail
+       ↓
+  Book Viewing
+       ↓
+ Select Date
+       ↓
+ Select Time
+       ↓
+ Confirm Booking
+       ↓
+ Booking Success
+       ↓
+  My Bookings
+Sale Flow
+Login
+  ↓
+Dashboard
+  ↓
+Booking List
+  ↓
+Booking Detail
+  ↓
+Confirm / Reject
+  ↓
+Update Status
+Admin Flow
+Login
+  ↓
+Dashboard
+  ↓
+User Management
+  ↓
+Property Management
+  ↓
+Booking Management
+________________________________________
+7. Functional Requirements
+FR-01: Authentication
+Customer
+Customer có thể:
+•	Đăng ký tài khoản.
+•	Đăng nhập.
+•	Đăng xuất.
+Sale / Admin
+Có thể đăng nhập bằng tài khoản được hệ thống cấp.
+Acceptance Criteria
+•	Email không được trùng.
+•	Không thể đăng nhập bằng thông tin không hợp lệ.
+•	User sau khi đăng nhập được xác định đúng Role.
+________________________________________
+8. Property Management
+FR-02: Property List
+Customer có thể xem danh sách Property.
+Thông tin tối thiểu:
+•	Property title
+•	Property type
+•	Price
+•	Area
+•	Bedrooms
+•	Location
+•	Thumbnail
+Customer có thể tìm kiếm / lọc theo các thông tin cơ bản.
+________________________________________
+9. Property Detail
+FR-03: Property Detail
+Customer có thể xem:
+•	Tên Property.
+•	Hình ảnh.
+•	Mô tả.
+•	Giá.
+•	Diện tích.
+•	Số phòng ngủ.
+•	Số phòng tắm.
+•	Địa chỉ / khu vực.
+•	Nút "Đặt lịch xem".
+Mục tiêu
+Customer phải có đủ thông tin cơ bản để quyết định:
+"Tôi có muốn đặt lịch xem căn này không?"
+________________________________________
+10. Booking
+FR-04: Create Booking
+Customer chọn:
+•	Property
+•	Date
+•	Start time
+•	End time
+Sau đó xác nhận booking.
+Booking mới có trạng thái:
+PENDING
+Business Rule
+Một Booking phải liên kết với:
+•	Customer
+•	Property
+•	Sale
+Sale là người xử lý booking.
+________________________________________
+11. Booking Status
+Booking có các trạng thái MVP:
+PENDING
+   │
+   ├── CONFIRMED
+   │      │
+   │      └── COMPLETED
+   │
+   ├── REJECTED
+   │
+   └── CANCELLED
+Ý nghĩa
+PENDING
+Customer vừa tạo booking, Sale chưa xử lý.
+CONFIRMED
+Sale xác nhận lịch.
+REJECTED
+Sale không thể nhận lịch.
+CANCELLED
+Booking bị Customer hoặc hệ thống hủy.
+COMPLETED
+Customer đã hoàn thành buổi xem nhà.
+________________________________________
+12. Sale Availability
+Sale có thể xác định khoảng thời gian mình có thể nhận booking.
+Ví dụ:
+Monday
+09:00 - 12:00
+14:00 - 17:00
+Mục tiêu:
+Tránh Customer đặt vào thời gian Sale không thể nhận.
+________________________________________
+13. My Bookings
+Customer có thể xem:
+•	Property
+•	Date
+•	Time
+•	Sale
+•	Booking Status
+Có thể lọc theo:
+•	Upcoming
+•	Completed
+•	Cancelled
+________________________________________
+14. Sale Dashboard
+Sale nhìn thấy:
+•	Booking Pending
+•	Booking Confirmed
+•	Booking Today
+•	Booking Completed
+Booking List hiển thị:
+•	Customer
+•	Property
+•	Date
+•	Time
+•	Status
+Sale có thể mở Booking Detail để xử lý.
+________________________________________
+15. Admin Dashboard
+Admin có thể xem tổng quan:
+•	Total Users
+•	Total Properties
+•	Total Sales
+•	Total Bookings
+Admin có thể truy cập:
+User Management
+Property Management
+Booking Management
+Sale Management
+________________________________________
+16. Database Concept
+Core Entity:
+User
+Role
+Customer Profile
+Sale Profile
+Property
+Property Media
+Booking
+Supporting Entity:
+Sale Availability
+Booking Status History
+Notification
+Quan hệ quan trọng
+User
+ ├── Customer Profile
+ └── Sale Profile
+
+Property
+ └── Property Media
+
+Customer
+ └── Booking
+        ├── Property
+        └── Sale
+Lý do
+Booking là trung tâm của nghiệp vụ.
+Một Booking trả lời được 3 câu hỏi:
+Ai muốn xem?
+Xem căn nào?
+Ai xử lý lịch xem?
+________________________________________
+17. UI/UX Principles
+Nguyên tắc 1 — Customer phải dễ đặt lịch
+Luồng:
+Property
+→ Detail
+→ Book
+→ Date
+→ Time
+→ Confirm
+Không bắt Customer đi qua nhiều màn hình không cần thiết.
+Nguyên tắc 2 — Status phải rõ ràng
+Customer phải dễ nhận biết:
+•	Pending
+•	Confirmed
+•	Rejected
+•	Cancelled
+•	Completed
+Nguyên tắc 3 — Action phải rõ
+Ví dụ:
+Confirm Booking
+Reject Booking
+Cancel Booking
+Không dùng các label gây khó hiểu.
+Nguyên tắc 4 — MVP trước
+Không thiết kế quá nhiều dashboard, filter hoặc setting nếu chưa phục vụ business flow.
+________________________________________
+18. MVP Scope
+Must Have
+Module	MVP
+Authentication	✓
+Property List	✓
+Property Detail	✓
+Create Booking	✓
+My Bookings	✓
+Sale Booking Management	✓
+Booking Status	✓
+Sale Availability	✓
+Admin Property Management	✓
+Admin User Management	✓
+Admin Booking Management	✓
+Future
+Feature	Phase
+AI Assistant	Future
+Chat	Future
+Payment	Future
+Review	Future
+Recommendation	Future
+Google Calendar	Future
+Route Optimization	Future
+________________________________________
+19. Acceptance Criteria — MVP
+MVP được xem là hoàn thành khi:
+Scenario 1
+Customer đăng nhập → tìm Property → mở Detail → tạo Booking thành công.
+Scenario 2
+Sale đăng nhập → nhìn thấy Booking Pending → Confirm Booking.
+Scenario 3
+Customer mở My Bookings → thấy Booking chuyển thành Confirmed.
+Scenario 4
+Sale Reject Booking → Customer thấy trạng thái Rejected.
+Scenario 5
+Customer Cancel Booking → Booking chuyển thành Cancelled.
+Scenario 6
+Sale chỉ nhận booking trong khoảng thời gian Availability đã cấu hình.
+Scenario 7
+Admin có thể xem và quản lý User, Property và Booking.
+________________________________________
+20. Success Criteria
+MVP tập trung vào một metric đơn giản:
+Customer có thể hoàn thành một booking từ lúc chọn Property đến khi Sale xác nhận mà không cần thao tác thủ công bên ngoài hệ thống.
+________________________________________
+21. Future Expansion
+Sau khi MVP hoạt động ổn định, có thể mở rộng:
+MVP
+ ↓
+Notification
+ ↓
+Review
+ ↓
+Calendar Integration
+ ↓
+AI Assistant
+ ↓
+Recommendation
+ ↓
+Route Optimization
+Không triển khai các phần này trước khi business flow cơ bản được validate.
+

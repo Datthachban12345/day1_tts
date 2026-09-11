@@ -1,0 +1,10 @@
+{
+  "description": "This web application connects users with local service providers, streamlining the process of finding and booking services for various needs.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
