@@ -220,6 +220,15 @@ mysql -u <username> -p <database_name> < database/booking.sql
 
 The sample schema is available at [`database/booking.sql`](database/booking.sql). The backend/API is not included in the current repository structure; add the related environment variables and run commands here when it is introduced.
 
+
+## 🎨 UI/UX
+
+### Wireframe
+
+![Wireframe](./docs/wireframe.png)
+
+[📄 View full PDF](./docs/wireframe.pdf)
+
 ## 🛣️ Roadmap
 
 1. Complete the REST API and authentication.
