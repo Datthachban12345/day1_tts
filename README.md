@@ -224,9 +224,6 @@ The sample schema is available at [`database/booking.sql`](database/booking.sql)
 ## 🎨 UI/UX
 
 ### Wireframe
-
-![Wireframe](./docs/wireframe.png)
-
 [📄 View full PDF](./docs/wireframe.pdf)
 
 ## 🛣️ Roadmap
