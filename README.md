@@ -1,859 +1,233 @@
 # 🏠 Home Viewing Booking System
 
-A web-based real estate viewing appointment system that allows customers to browse properties, schedule property viewings, and manage their bookings. Sales staff can manage availability and handle viewing appointments.
+![Phase](https://img.shields.io/badge/phase-Phase%201%20MVP-2563eb?style=flat-square)
+![React](https://img.shields.io/badge/React-18%2B-61dafb?style=flat-square&logo=react&logoColor=111827)
+![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-3178c6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-frontend-646cff?style=flat-square&logo=vite&logoColor=white)
+![Database](https://img.shields.io/badge/database-MySQL%208%20%7C%20MariaDB-4479a1?style=flat-square&logo=mysql&logoColor=white)
 
----
+A web-based system that helps customers search for properties, schedule home viewings, and track appointment status. Sales staff manage their availability and handle bookings, while administrators manage users, properties, and system activity.
 
-## 1. Problem Statement & Objective
+> **Phase 1 objective:** build a clear, trackable, and extensible home-viewing workflow without overcomplicating the MVP.
 
-### Problem Statement
+## Table of Contents
 
-Traditional property viewing processes often rely on phone calls, messages, or manual coordination between customers and sales staff.
+- [Overview](#-overview)
+- [Problem and Objective](#-problem-and-objective)
+- [Features by Role](#-features-by-role)
+- [MVP Scope](#-mvp-scope)
+- [System Workflow](#-system-workflow)
+- [Visual Documentation](#-visual-documentation)
+- [Database Architecture](#-database-architecture)
+- [UI/UX Overview](#-uiux-overview)
+- [Technology Stack](#-technology-stack)
+- [Installation](#-installation)
 
-This creates several problems:
+## 📌 Overview
 
-* Customers have difficulty finding suitable properties.
-* Viewing schedules can overlap or be misunderstood.
-* Sales staff need to manually track their availability.
-* Booking status is difficult to monitor.
-* There is no centralized history of booking activities.
-* Customers may not receive timely updates about their appointments.
+| Item | Description |
+| --- | --- |
+| Project | Home Viewing Booking System |
+| Users | Customer, Sales Staff, Admin |
+| Main flow | Find property → choose time → create booking → sales confirmation → completion |
+| Booking statuses | `PENDING`, `CONFIRMED`, `REJECTED`, `CANCELLED`, `COMPLETED` |
+| Release stage | Phase 1 MVP |
 
-### Objective
+## 🎯 Problem and Objective
 
-The goal of this project is to build a simple and reliable **Property Viewing Booking System** that centralizes the process:
+Traditional home-viewing processes often depend on phone calls, messages, and manual records. This can lead to overlapping schedules, inconsistent information, poor status visibility, and delayed customer updates.
 
-```text
-Find Property
-      ↓
-Select Property
-      ↓
-Choose Viewing Time
-      ↓
-Create Booking
-      ↓
-Sale Confirms
-      ↓
-Customer Views Property
-      ↓
-Booking Completed
-```
-
-The Phase 1 MVP focuses on implementing the essential booking workflow before introducing more advanced features.
-
----
-
-# 2. Feature Breakdown
-
-## 2.1 Customer Features
-
-### Authentication
-
-* Register / Login
-* Manage basic profile information
-
-### Property Browsing
-
-* View available properties
-* Search properties
-* Filter by:
-
-  * City
-  * District
-  * Price
-  * Area
-  * Bedrooms
-  * Property type
-
-### Property Details
-
-* View property information
-* View description
-* View images
-* View price, area, bedrooms, and bathrooms
-
-### Booking
-
-* Select a property
-* Select viewing date
-* Select viewing time
-* Add customer notes
-* Create a viewing booking
-
-### Booking Management
-
-* View booking history
-* View current booking status
-* Cancel booking when applicable
-
-### Notifications
-
-* Receive booking confirmation
-* Receive booking status updates
-
----
-
-## 2.2 Sales Staff Features
-
-### Authentication
-
-* Login as Sales Staff
-
-### Availability Management
-
-* Define available working days
-* Define available working hours
-
-### Booking Management
-
-* View assigned bookings
-* Confirm bookings
-* Reject bookings
-* Update booking status
-* Add notes about the viewing
-
-### Customer Information
-
-* View customer information related to a booking
-
----
-
-## 2.3 Admin Features
-
-### User Management
-
-* Manage users
-* Manage roles
-* Activate / deactivate accounts
-
-### Property Management
-
-* Create properties
-* Update properties
-* Remove properties
-* Manage property status
-* Manage property images
-
-### Booking Monitoring
-
-* View all bookings
-* Monitor booking statuses
-* Review booking history
-
----
-
-# 3. Selected Core Features (Phase 1 MVP)
-
-To keep the first version focused and achievable, Phase 1 only implements the core booking workflow.
-
-## Core Features
-
-### 1. User & Role Management
-
-Supported roles:
+The system centralizes the complete workflow:
 
 ```text
-ADMIN
-SALE
-CUSTOMER
+Find property → View details → Select date/time → Create booking
+       → Sales confirmation or rejection → View property → Complete
 ```
 
-Each user has a single role that determines their permissions.
+## 👥 Features by Role
 
----
+| Role | Main capabilities |
+| --- | --- |
+| **Customer** | Register/login, search and filter properties, view details, create bookings, view history, cancel eligible bookings, receive notifications |
+| **Sales Staff** | Login, define availability, view assigned bookings, confirm/reject/complete bookings, add notes, view customer information |
+| **Admin** | Manage users and roles, activate/deactivate accounts, manage properties and media, monitor bookings and booking history |
 
-### 2. Property Management
+## 🚀 MVP Scope
 
-The system stores essential property information:
+- User and role management with `ADMIN`, `SALE`, and `CUSTOMER`.
+- Property management covering property type, address, price, area, bedrooms, bathrooms, status, and media.
+- Property search and filtering by city, district, price, area, bedrooms, and property type.
+- Viewing bookings with date, start time, end time, and customer notes.
+- Sales availability by working day and time slot.
+- Booking history recording the previous status, new status, actor, reason, and timestamp.
+- Notifications when a booking is created, confirmed, rejected, cancelled, or completed.
 
-* Property title
-* Description
-* Property type
-* Address
-* District
-* City
-* Price
-* Area
-* Bedrooms
-* Bathrooms
-* Availability status
-* Property images
+### Booking lifecycle
 
----
-
-### 3. Property Search & Filtering
-
-Customers can find properties using basic criteria:
-
-```text
-Location
-Price
-Area
-Bedrooms
-Property Type
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING: Customer creates booking
+    PENDING --> CONFIRMED: Sales confirms
+    PENDING --> REJECTED: Sales rejects
+    PENDING --> CANCELLED: Customer cancels
+    CONFIRMED --> COMPLETED: Viewing completed
+    CONFIRMED --> CANCELLED: Cancelled when eligible
 ```
 
-Example:
+Out of scope for Phase 1: AI agents, automatic sales ranking, route optimization, automatic rescheduling, external calendar synchronization, behavioral analytics, and advanced reviews.
 
-```text
-"Căn hộ 2 phòng ngủ ở Cầu Giấy dưới 5 tỷ"
+## 🔄 System Workflow
+
+```mermaid
+sequenceDiagram
+    actor C as Customer
+    participant UI as Frontend
+    participant API as REST API
+    participant DB as MySQL/MariaDB
+    actor S as Sales Staff
+    C->>UI: Search for properties
+    UI->>API: Submit filter criteria
+    API->>DB: Query properties
+    DB-->>API: Matching properties
+    API-->>UI: Display results
+    C->>UI: Select date, time, and notes
+    UI->>API: Create booking
+    API->>DB: Save booking as PENDING
+    API-->>S: Send notification
+    S->>API: Confirm or reject booking
+    API->>DB: Update status and history
+    API-->>C: Send status update
 ```
 
-The system converts these requirements into database filters.
+## 🗺️ Visual Documentation
 
----
+### Product mindmap
 
-### 4. Viewing Booking
+The mindmap describes the product scope, feature groups, MVP entities, key relationships, and UI/UX direction.
 
-Customers can create a viewing appointment by selecting:
+![Home Viewing Booking System product mindmap](docs/Business%20Plan.png)
 
-```text
-Property
-Date
-Start Time
-End Time
-Customer Note
-```
+### Workflow and use-case diagrams
 
-The booking is initially created with:
+![Booking workflow by role](docs/Screenshot%202026-09-12%20022553.png)
 
-```text
-PENDING
-```
+![Use-case diagram](docs/Screenshot%202026-09-12%20022621.png)
 
----
+### Design files and source documents
 
-### 5. Sales Availability
+- [View the wireframe PDF](docs/wireframe.pdf)
+- [Open the original Figma wireframe file](docs/wireframe.fig)
+- [View the database/system diagram PDF](docs/Diagram%20-%20localhost.pdf)
+- [View the product requirements document](docs/prd.txt)
 
-Sales staff define when they are available.
+> GitHub renders the PNG images directly in this README. The PDF and `.fig` files are provided as links to preserve their quality and allow downloading or editing.
 
-Example:
-
-```text
-Monday
-08:00 - 12:00
-13:30 - 17:30
-```
-
-The system uses this information when handling viewing appointments.
-
----
-
-### 6. Booking Status Management
-
-The Phase 1 booking lifecycle is:
-
-```text
-PENDING
-   │
-   ├──→ CONFIRMED
-   │       │
-   │       └──→ COMPLETED
-   │
-   └──→ REJECTED
-
-PENDING / CONFIRMED
-        │
-        └──→ CANCELLED
-```
-
-This provides a clear and traceable booking workflow.
-
----
-
-### 7. Booking History
-
-Every important status change is recorded.
-
-Example:
-
-```text
-PENDING
-    ↓
-CONFIRMED
-    ↓
-COMPLETED
-```
-
-The system records:
-
-* Previous status
-* New status
-* Who changed it
-* Reason
-* Timestamp
-
----
-
-### 8. Notifications
-
-Users receive notifications for important booking events:
-
-* Booking created
-* Booking confirmed
-* Booking rejected
-* Booking cancelled
-* Booking completed
-
----
-
-# 4. Database Architecture & Detailed ERD
-
-## 4.1 Database Architecture
-
-The system uses a relational database design based on **MySQL 8.0+ / MariaDB**.
-
-The database is organized into four main domains:
+## 🗄️ Database Architecture
 
 ```text
 HOME BOOKING SYSTEM
-│
-├── User Management
-│   ├── roles
-│   ├── users
-│   ├── customer_profiles
-│   └── sale_profiles
-│
-├── Property Management
-│   ├── properties
-│   └── property_media
-│
-├── Schedule Management
-│   └── sale_availability
-│
-└── Booking Management
-    ├── bookings
-    ├── booking_status_history
-    └── notifications
+├── User Management: roles, users, customer_profiles, sale_profiles
+├── Property Management: properties, property_media
+├── Schedule Management: sale_availability
+└── Booking Management: bookings, booking_status_history, notifications
 ```
 
----
+| Table | Responsibility |
+| --- | --- |
+| `roles` | System roles |
+| `users` | User accounts and authentication data |
+| `customer_profiles` / `sale_profiles` | Role-specific profile information |
+| `properties` / `property_media` | Properties and media |
+| `sale_availability` | Sales availability schedule |
+| `bookings` | Property viewing appointments |
+| `booking_status_history` | Booking status history |
+| `notifications` | User notifications |
 
-## 4.2 Database Tables
+### ERD overview
 
-| Table                    | Responsibility                       |
-| ------------------------ | ------------------------------------ |
-| `roles`                  | Stores system roles                  |
-| `users`                  | Stores user accounts                 |
-| `customer_profiles`      | Stores customer-specific information |
-| `sale_profiles`          | Stores sales staff information       |
-| `properties`             | Stores property information          |
-| `property_media`         | Stores property images/media         |
-| `sale_availability`      | Stores sales staff availability      |
-| `bookings`               | Stores property viewing appointments |
-| `booking_status_history` | Stores booking status changes        |
-| `notifications`          | Stores user notifications            |
-
----
-
-## 4.3 Core Relationships
-
-```text
-roles
-  │
-  │ 1:N
-  ▼
-users
-  │
-  ├───────────────┐
-  │               │
-  │ 1:1           │ 1:1
-  ▼               ▼
-customer_profiles sale_profiles
-                    │
-                    │ 1:N
-                    ▼
-             sale_availability
-
-
-users ───────────────┐
- │                    │
- │                    │
- │              ┌─────┴─────┐
- │              │  bookings │
- │              └─────┬─────┘
- │                    │
- │                    │ N:1
- │                    ▼
- │                properties
- │                    │
- │                    │ 1:N
- │                    ▼
- │              property_media
- │
- └── booking_status_history
- └── notifications
+```mermaid
+erDiagram
+    ROLES ||--o{ USERS : has
+    USERS ||--o| CUSTOMER_PROFILES : owns
+    USERS ||--o| SALE_PROFILES : owns
+    USERS ||--o{ PROPERTIES : creates
+    USERS ||--o{ SALE_AVAILABILITY : defines
+    USERS ||--o{ BOOKINGS : customer
+    USERS ||--o{ BOOKINGS : sale
+    USERS ||--o{ NOTIFICATIONS : receives
+    PROPERTIES ||--o{ PROPERTY_MEDIA : contains
+    PROPERTIES ||--o{ BOOKINGS : requested_for
+    BOOKINGS ||--o{ BOOKING_STATUS_HISTORY : records
 ```
-
----
-
-## 4.4 Entity Relationship Overview
-
-### `roles`
-
-Stores the available roles:
-
-```text
-ADMIN
-SALE
-CUSTOMER
-```
-
-### `users`
-
-Stores common authentication and account information.
-
-```text
-users
- ├── role_id → roles.id
- └── user information
-```
-
-### `customer_profiles`
-
-Stores additional information specific to customers.
-
-```text
-customer_profiles
- └── user_id → users.id
-```
-
-### `sale_profiles`
-
-Stores additional information specific to sales staff.
-
-```text
-sale_profiles
- └── user_id → users.id
-```
-
-### `properties`
-
-Stores the properties available for viewing.
-
-```text
-properties
- └── created_by → users.id
-```
-
-### `property_media`
-
-Stores multiple images/media for each property.
-
-```text
-property_media
- └── property_id → properties.id
-```
-
-### `sale_availability`
-
-Stores the working availability of sales staff.
-
-```text
-sale_availability
- └── sale_id → users.id
-```
-
-### `bookings`
-
-The central table connecting:
-
-```text
-Customer
-    +
-Property
-    +
-Sale
-    +
-Viewing Schedule
-```
-
-Relationships:
 
 ```text
 bookings.customer_id → users.id
 bookings.property_id → properties.id
-bookings.sale_id → users.id
+bookings.sale_id     → users.id
 ```
 
-### `booking_status_history`
+## 🖥️ UI/UX Overview
 
-Stores the history of booking status changes.
+### Customer flow
 
-```text
-booking_status_history
- └── booking_id → bookings.id
+`Home → Property Search → Property List → Property Details → Select Date & Time → Booking Confirmation → Booking Status`
+
+| Screen | Content |
+| --- | --- |
+| Home/Search | Search, filters, and available properties |
+| Property List | Image, title, location, price, area, and bedrooms |
+| Property Details | Gallery, address, details, description, and booking action |
+| Booking | Date, start/end time, and customer note |
+| My Bookings | Bookings, statuses, history, and cancellation actions |
+| Sales Dashboard | Daily schedule, customer information, and booking actions |
+
+Design principles: keep the `Search → Property → Book` flow short, make statuses easy to understand, support desktop/mobile layouts, and maintain consistent UI components.
+
+## 🧰 Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, responsive CSS |
+| Backend | REST API, authentication, role-based access control |
+| Database | MySQL 8.0+ or MariaDB, foreign keys, indexes, transactions |
+| Tools | Git/GitHub, Figma, Navicat, Mermaid |
+
+## ⚡ Installation
+
+### Requirements
+
+- Node.js 18+
+- pnpm 8+ or npm 9+
+- MySQL 8.0+ / MariaDB when connecting to the backend
+
+### Run the frontend prototype
+
+```bash
+cd frontend
+pnpm install
+pnpm dev
 ```
 
-### `notifications`
+Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 
-Stores notifications associated with users and booking events.
+### Build and initialize the database
 
-```text
-notifications
- └── user_id → users.id
+```bash
+cd frontend
+pnpm build
+mysql -u <username> -p <database_name> < database/booking.sql
 ```
 
----
+The sample schema is available at [`database/booking.sql`](database/booking.sql). The backend/API is not included in the current repository structure; add the related environment variables and run commands here when it is introduced.
 
-## 4.5 Detailed ERD
+## 🛣️ Roadmap
 
-The detailed ERD is maintained separately using the database design/ERD tool.
+1. Complete the REST API and authentication.
+2. Connect the frontend to the database through the API.
+3. Add schedule-conflict validation and transactions when creating bookings.
+4. Add real-time or email notifications.
+5. Expand post-MVP features based on real usage data.
 
-Recommended structure:
+## 📄 License
 
-```text
-┌────────────┐
-│   roles    │
-└─────┬──────┘
-      │
-      │ 1:N
-      ▼
-┌────────────┐
-│   users    │
-└─────┬──────┘
-      │
-      ├──────────────┐
-      │              │
-      ▼              ▼
-┌─────────────┐ ┌──────────────┐
-│  customer   │ │    sale      │
-│  profiles   │ │   profiles   │
-└─────────────┘ └──────┬───────┘
-                       │
-                       ▼
-                ┌───────────────┐
-                │     sale      │
-                │ availability  │
-                └───────────────┘
-
-┌──────────────┐
-│  properties  │
-└──────┬───────┘
-       │
-       │ 1:N
-       ▼
-┌────────────────┐
-│ property_media │
-└────────────────┘
-
-┌──────────────┐
-│   bookings   │
-└──────┬───────┘
-       │
-       ├────────────── Customer
-       │
-       ├────────────── Property
-       │
-       └────────────── Sale
-       │
-       ├────────────── booking_status_history
-       │
-       └────────────── notifications
-```
-
-> **ERD Source:** MySQL database schema in `home_booking`.
-
----
-
-# 5. Interactive Frontend Prototype
-
-The frontend prototype focuses on providing a simple and intuitive booking experience.
-
-## 5.1 Customer Flow
-
-```text
-Home
-  ↓
-Property Search
-  ↓
-Property List
-  ↓
-Property Details
-  ↓
-Select Viewing Date & Time
-  ↓
-Booking Confirmation
-  ↓
-Booking Status
-```
-
----
-
-## 5.2 Main Customer Screens
-
-### Home / Property Search
-
-The customer can:
-
-* Search for properties
-* Filter properties
-* Browse available properties
-
-Example:
-
-```text
-Search: Căn hộ Cầu Giấy
-
-Filters:
-Price: < 5 tỷ
-Bedrooms: >= 2
-Area: >= 70 m²
-```
-
----
-
-### Property Listing
-
-Displays:
-
-* Property image
-* Property title
-* Location
-* Price
-* Area
-* Bedrooms
-* Main action: `View Details`
-
----
-
-### Property Details
-
-Displays:
-
-* Property images
-* Property title
-* Address
-* Price
-* Area
-* Bedrooms
-* Bathrooms
-* Description
-
-Main action:
-
-```text
-[ Book a Viewing ]
-```
-
----
-
-### Booking Screen
-
-Customer selects:
-
-```text
-Date
-Start Time
-End Time
-Note
-```
-
-Then:
-
-```text
-[ Confirm Booking ]
-```
-
----
-
-### Booking Status
-
-Customer can see:
-
-```text
-Booking #001
-
-Property:
-Vinhomes D'Capitale
-
-Date:
-15/09/2026
-
-Time:
-09:00 - 10:00
-
-Status:
-PENDING
-```
-
----
-
-## 5.3 Sales Dashboard
-
-Sales staff can see:
-
-```text
-Today's Schedule
-
-09:00 - 10:00
-Căn hộ Vinhomes D'Capitale
-Customer: Phạm Quang Minh
-Status: PENDING
-
-14:00 - 15:00
-Royal City
-Customer: Hoàng Ngọc Lan
-Status: CONFIRMED
-```
-
-Available actions:
-
-```text
-[ Confirm ]
-[ Reject ]
-[ Complete ]
-```
-
----
-
-## 5.4 UI/UX Principles
-
-The prototype follows several basic principles:
-
-### Simplicity
-
-The customer should be able to go from:
-
-```text
-Search → Property → Book
-```
-
-with minimal steps.
-
-### Clear Status
-
-Booking status should always be visually understandable:
-
-```text
-PENDING
-CONFIRMED
-REJECTED
-CANCELLED
-COMPLETED
-```
-
-### Mobile-Friendly
-
-The customer booking flow should work well on both desktop and mobile screens.
-
-### Consistency
-
-Buttons, forms, cards, status indicators, and navigation should follow a consistent design system.
-
----
-
-# 6. Phase 1 MVP Scope
-
-The first release focuses on:
-
-```text
-┌────────────────────────────────────┐
-│       PHASE 1 MVP                  │
-├────────────────────────────────────┤
-│ User Authentication                │
-│ Property Browsing                  │
-│ Property Search & Filtering        │
-│ Property Details                   │
-│ Viewing Booking                    │
-│ Sale Availability                  │
-│ Booking Status Management          │
-│ Booking History                    │
-│ Notifications                      │
-└────────────────────────────────────┘
-```
-
-Features intentionally excluded from Phase 1:
-
-* AI Agent
-* Automatic Sale ranking
-* Route optimization
-* Automatic rescheduling
-* Advanced recommendation
-* Calendar synchronization
-* Customer behavioral analytics
-* Advanced evaluation system
-
-These features can be considered in later phases after the core booking workflow is stable.
-
----
-
-# 7. Core System Workflow
-
-The complete Phase 1 workflow is:
-
-```text
-Customer
-   │
-   ▼
-Search Property
-   │
-   ▼
-View Property Details
-   │
-   ▼
-Select Date & Time
-   │
-   ▼
-Create Booking
-   │
-   ▼
-PENDING
-   │
-   ▼
-Sale Reviews Booking
-   │
-   ├───────────────┐
-   │               │
-   ▼               ▼
-CONFIRMED       REJECTED
-   │
-   ▼
-Property Viewing
-   │
-   ▼
-COMPLETED
-```
-
----
-
-# 8. Technology Stack
-
-### Backend
-
-* MySQL 8.0+ / MariaDB
-* REST API
-* Authentication & Role-Based Access Control
-
-### Frontend
-
-* React
-* TypeScript
-* Responsive UI
-
-### Database
-
-* Relational database
-* Foreign Key constraints
-* Indexed search fields
-* Transactional booking data
-
-### Development Tools
-
-* Git / GitHub
-* Navicat
-* Database ERD / DBML documentation
-
----
-
-# 9. Project Goal
-
-The primary goal of Phase 1 is not to build a highly complex real estate platform.
-
-Instead, the goal is to build a **clean, functional, and extensible foundation** for the property viewing booking process.
-
-The system should first solve:
-
-> **"A customer wants to view a property. How can the system reliably create, manage, confirm, and track that viewing appointment?"**
-
-Once this workflow is stable, more advanced features can be introduced without unnecessarily complicating the MVP.
+This is an academic/prototype project for research and product development purposes.
