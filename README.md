@@ -113,6 +113,47 @@ The mindmap describes the product scope, feature groups, MVP entities, key relat
 
 ![Use-case diagram](docs/Screenshot%202026-09-12%20022621.png)
 
+### C4 Container Diagram - Booking
+
+The container view focuses on the booking workflow: a customer submits a viewing request, the REST API validates and stores it, the sales agent processes it, and the notification component informs the relevant users.
+
+```mermaid
+C4Container
+    title Booking System - C4 Container Diagram
+
+    Person(customer, "Customer", "Searches properties and creates or cancels viewing bookings")
+    Person(sales, "Sales Staff", "Manages availability and confirms, rejects, or completes bookings")
+    Person(admin, "Administrator", "Manages users, properties, and booking records")
+
+    System_Boundary(system, "Home Viewing Booking System") {
+        Container(frontend, "Web Frontend", "React + TypeScript + Vite", "Property search, booking form, booking history, and role-based dashboards")
+        Container(api, "REST API", "Backend service", "Authentication, authorization, property queries, booking rules, and status transitions")
+        ContainerDb(database, "Booking Database", "MySQL / MariaDB", "Users, properties, availability, bookings, status history, and notifications")
+        Container(notification, "Notification Service", "Application service", "Creates and delivers booking status notifications")
+    }
+
+    Rel(customer, frontend, "Searches properties and submits booking requests", "HTTPS")
+    Rel(sales, frontend, "Reviews and processes bookings", "HTTPS")
+    Rel(admin, frontend, "Manages system data", "HTTPS")
+    Rel(frontend, api, "Calls REST endpoints", "JSON/HTTPS")
+    Rel(api, database, "Reads and writes booking data", "SQL")
+    Rel(api, notification, "Publishes booking events", "Internal call")
+    Rel(notification, database, "Stores notification records", "SQL")
+    Rel(notification, customer, "Sends booking updates", "Email or in-app notification")
+    Rel(notification, sales, "Sends new booking alerts", "Email or in-app notification")
+```
+
+#### Booking container responsibilities
+
+| Container | Booking responsibility |
+| --- | --- |
+| **Web Frontend** | Collects the property, date, time, and customer note; displays booking status and history. |
+| **REST API** | Checks authentication, availability, conflicts, permissions, and valid status transitions. |
+| **Booking Database** | Persists bookings and the immutable status history used for tracking. |
+| **Notification Service** | Notifies customers and sales staff after booking events. |
+
+The main booking request should be handled in one API transaction: validate the selected slot, create the booking as `PENDING`, write the initial status-history record, and create the notification event. This prevents a booking from being stored without its corresponding history.
+
 ### Design files and source documents
 
 - [View the wireframe PDF](docs/wireframe.pdf)
