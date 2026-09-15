@@ -21,7 +21,18 @@ A web-based system that helps customers search for properties, schedule home vie
 - [Database Architecture](#-database-architecture)
 - [UI/UX Overview](#-uiux-overview)
 - [Technology Stack](#-technology-stack)
+- [Documentation](#documentation)
 - [Installation](#-installation)
+
+## Documentation
+
+Start here, in order:
+
+| Document | What it answers |
+| --- | --- |
+| [Architecture](docs/architecture-arc42.md) | arc42 + C4 - the main system design document |
+| [OpenAPI Specification](docs/openapi.yaml) | REST API endpoints, request/response schemas, and authentication contracts |
+| [User Stories INVEST](docs/user_stories_invest.md) | Product requirements, user stories, and acceptance criteria |
 
 ## 📌 Overview
 
