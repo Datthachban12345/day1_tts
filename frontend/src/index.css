@@ -40,3 +40,29 @@ body,
 #root {
   height: 100%;
 }
+
+button,
+a,
+select {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+.sales-dashboard {
+  font-family: "Inter:Regular", Inter, sans-serif;
+  letter-spacing: 0;
+}
+
+.sales-dashboard h1,
+.sales-dashboard h2,
+.sales-dashboard h3,
+.sales-dashboard h4,
+.sales-dashboard strong,
+.sales-dashboard button {
+  font-family: "Inter:Semi Bold", Inter, sans-serif;
+}
+

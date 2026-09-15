@@ -1,0 +1,888 @@
+﻿openapi: 3.0.3
+info:
+  title: Home Viewing Booking System API
+  description: RESTful API for Home Viewing Booking System (Phase 1 MVP) - Supporting Customer booking flows, Sales availability & approval management, and Admin property/user management.
+  version: 1.0.0
+  contact:
+    name: Development Team
+    email: dev@homeviewing.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development Server
+  - url: https://api.homeviewing.com/api
+    description: Production Server
+
+tags:
+  - name: Authentication
+    description: User registration, login, and profile retrieval
+  - name: Properties
+    description: Real estate property search, details, and CRUD operations
+  - name: Sales Availability
+    description: Working schedule and time slots management for Sales Staff
+  - name: Bookings
+    description: Property viewing appointment scheduling, conflict validation, and status transitions
+  - name: Notifications
+    description: User notification delivery and read status
+  - name: Admin
+    description: System user management and platform monitoring
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register a new Customer account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: Login to obtain JWT Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get current authenticated user profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /properties:
+    get:
+      tags: [Properties]
+      summary: Search and filter available properties
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+          example: Hanoi
+        - name: district
+          in: query
+          schema:
+            type: string
+          example: Cau Giay
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: minArea
+          in: query
+          schema:
+            type: number
+        - name: bedrooms
+          in: query
+          schema:
+            type: integer
+        - name: propertyType
+          in: query
+          schema:
+            type: string
+            enum: [APARTMENT, HOUSE, VILLA, TOWNHOUSE]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: List of filtered properties with pagination
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyListResponse'
+    post:
+      tags: [Properties]
+      summary: Create a new property (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePropertyRequest'
+      responses:
+        '201':
+          description: Property created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Property'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /properties/{id}:
+    get:
+      tags: [Properties]
+      summary: Get property details by ID including media gallery
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Property details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyDetail'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /sales/availability:
+    get:
+      tags: [Sales Availability]
+      summary: Get current sales staff availability schedule
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of availability slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilitySlot'
+    post:
+      tags: [Sales Availability]
+      summary: Set/Add working time slots (Sales only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAvailabilityRequest'
+      responses:
+        '201':
+          description: Availability slots updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilitySlot'
+
+  /sales/{saleId}/availability:
+    get:
+      tags: [Sales Availability]
+      summary: Get public availability slots of a specific Sales agent (for Customer booking)
+      parameters:
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Public availability of the agent
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailabilitySlot'
+
+  /bookings:
+    post:
+      tags: [Bookings]
+      summary: Create a property viewing booking (Customer only) - Handled in ACID Transaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Booking created successfully in PENDING status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Slot outside of Sales availability
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Time slot conflict (Double-booking detected)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bookings/customer:
+    get:
+      tags: [Bookings]
+      summary: Get bookings belonging to the authenticated Customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+      responses:
+        '200':
+          description: Customer booking list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /bookings/sale:
+    get:
+      tags: [Bookings]
+      summary: Get bookings assigned to the authenticated Sales Staff
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+      responses:
+        '200':
+          description: Sales booking list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /bookings/admin:
+    get:
+      tags: [Bookings]
+      summary: Get all bookings for the authenticated Administrator
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+      responses:
+        '200':
+          description: All booking records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /bookings/{id}:
+    get:
+      tags: [Bookings]
+      summary: Get booking details including immutable status history (Audit log)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detailed booking and status history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingDetail'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /bookings/{id}/status:
+    patch:
+      tags: [Bookings]
+      summary: Transition booking status (CONFIRM, REJECT, CANCEL, COMPLETE)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookingStatusRequest'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Invalid state transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get current user notifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+  /notifications/{id}/read:
+    patch:
+      tags: [Notifications]
+      summary: Mark a notification as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all system users (Admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserProfile'
+    post:
+      tags: [Admin]
+      summary: Create internal user (e.g. create Sales Staff account)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserAdminRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /admin/users/{id}/status:
+    patch:
+      tags: [Admin]
+      summary: Activate or deactivate a user account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isActive]
+              properties:
+                isActive:
+                  type: boolean
+      responses:
+        '200':
+          description: Account status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password, fullName, phone]
+      properties:
+        email:
+          type: string
+          format: email
+          example: customer@example.com
+        password:
+          type: string
+          minLength: 6
+          example: Password123!
+        fullName:
+          type: string
+          example: Nguyen Van A
+        phone:
+          type: string
+          example: "0912345678"
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: customer@example.com
+        password:
+          type: string
+          example: Password123!
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        user:
+          $ref: '#/components/schemas/UserProfile'
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, SALE, CUSTOMER]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    Property:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        propertyType:
+          type: string
+          enum: [APARTMENT, HOUSE, VILLA, TOWNHOUSE]
+        price:
+          type: number
+        area:
+          type: number
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        address:
+          type: string
+        district:
+          type: string
+        city:
+          type: string
+        status:
+          type: string
+          enum: [AVAILABLE, SOLD, RENTED, INACTIVE]
+        thumbnailUrl:
+          type: string
+
+    PropertyDetail:
+      allOf:
+        - $ref: '#/components/schemas/Property'
+        - type: object
+          properties:
+            description:
+              type: string
+            assignedSaleId:
+              type: integer
+            media:
+              type: array
+              items:
+                $ref: '#/components/schemas/PropertyMedia'
+
+    PropertyMedia:
+      type: object
+      properties:
+        id:
+          type: integer
+        mediaUrl:
+          type: string
+        mediaType:
+          type: string
+          enum: [IMAGE, VIDEO]
+        isPrimary:
+          type: boolean
+
+    CreatePropertyRequest:
+      type: object
+      required: [title, propertyType, price, area, address, district, city]
+      properties:
+        title:
+          type: string
+        propertyType:
+          type: string
+          enum: [APARTMENT, HOUSE, VILLA, TOWNHOUSE]
+        price:
+          type: number
+        area:
+          type: number
+        bedrooms:
+          type: integer
+        bathrooms:
+          type: integer
+        address:
+          type: string
+        district:
+          type: string
+        city:
+          type: string
+        description:
+          type: string
+        mediaUrls:
+          type: array
+          items:
+            type: string
+
+    PropertyListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Property'
+        pagination:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            limit:
+              type: integer
+            totalPages:
+              type: integer
+
+    AvailabilitySlot:
+      type: object
+      properties:
+        id:
+          type: integer
+        saleId:
+          type: integer
+        dayOfWeek:
+          type: integer
+          description: 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        startTime:
+          type: string
+          example: "08:30:00"
+        endTime:
+          type: string
+          example: "11:30:00"
+
+    CreateAvailabilityRequest:
+      type: object
+      required: [slots]
+      properties:
+        slots:
+          type: array
+          items:
+            type: object
+            required: [dayOfWeek, startTime, endTime]
+            properties:
+              dayOfWeek:
+                type: integer
+              startTime:
+                type: string
+              endTime:
+                type: string
+
+    CreateBookingRequest:
+      type: object
+      required: [propertyId, bookingDate, startTime, endTime]
+      properties:
+        propertyId:
+          type: integer
+        saleId:
+          type: integer
+        bookingDate:
+          type: string
+          format: date
+          example: "2026-10-01"
+        startTime:
+          type: string
+          example: "09:00:00"
+        endTime:
+          type: string
+          example: "10:00:00"
+        customerNote:
+          type: string
+          example: "Muốn xem kỹ hướng ban công và khu vực bếp."
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerId:
+          type: integer
+        customerName:
+          type: string
+        customerPhone:
+          type: string
+        propertyId:
+          type: integer
+        propertyTitle:
+          type: string
+        saleId:
+          type: integer
+        saleName:
+          type: string
+        bookingDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+        endTime:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+        customerNote:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingDetail:
+      allOf:
+        - $ref: '#/components/schemas/Booking'
+        - type: object
+          properties:
+            statusHistory:
+              type: array
+              items:
+                $ref: '#/components/schemas/BookingStatusHistory'
+
+    BookingStatusHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+        oldStatus:
+          type: string
+        newStatus:
+          type: string
+        actorId:
+          type: integer
+        actorName:
+          type: string
+        actorRole:
+          type: string
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    UpdateBookingStatusRequest:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [CONFIRMED, REJECTED, CANCELLED, COMPLETED]
+        reason:
+          type: string
+          example: "Bận lịch công tác đột xuất."
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateUserAdminRequest:
+      type: object
+      required: [email, password, fullName, phone, role]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: string
+        role:
+          type: string
+          enum: [ADMIN, SALE, CUSTOMER]
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Thao tác thành công."
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "INVALID_REQUEST"
+        message:
+          type: string
+          example: "Mô tả chi tiết lỗi."
+
+  responses:
+    BadRequestError:
+      description: Dữ liệu gửi lên không hợp lệ
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    UnauthorizedError:
+      description: Chưa xác thực JWT Token hoặc Token hết hạn
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ForbiddenError:
+      description: Không có quyền truy cập tài nguyên (Sai vai trò RBAC)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFoundError:
+      description: Không tìm thấy tài nguyên
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

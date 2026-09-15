@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.notificationRoutes = void 0;
+const express_1 = require("express");
+const notification_controller_js_1 = require("../controllers/notification.controller.js");
+const auth_middleware_js_1 = require("../middlewares/auth.middleware.js");
+exports.notificationRoutes = (0, express_1.Router)();
+const notificationController = new notification_controller_js_1.NotificationController();
+exports.notificationRoutes.get("/", auth_middleware_js_1.authenticate, notificationController.getMyNotifications);
+exports.notificationRoutes.patch("/:id/read", auth_middleware_js_1.authenticate, notificationController.markAsRead);
