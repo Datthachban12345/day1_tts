@@ -1,0 +1,37 @@
+graph TB
+    subgraph ClientTier ["Web Client Container (React + Vite + TypeScript)"]
+        Pages["Pages / Tabs (Home, PropertyDetail, MyBookings, SalesDashboard, AdminPortal)"]
+        UIComponents["UI Components (UIStates, BookingModal, PropertyCard, Navbar)"]
+        APIServices["API Services (api.ts, auth.service, booking.service, property.service)"]
+        Pages --> UIComponents
+        Pages --> APIServices
+    end
+
+    subgraph BackendTier ["REST API Backend Container (Node.js + Express)"]
+        subgraph PresentationLayer ["Tier 1: Presentation Layer"]
+            Routes["API Routes (/auth, /properties, /bookings, /availability, /admin)"]
+            Controllers["Controllers (AuthController, BookingController, PropertyController, AdminController)"]
+            Middlewares["Middlewares (JWT Authenticate, RBAC Authorize, ErrorHandler)"]
+            Routes --> Middlewares
+            Routes --> Controllers
+        end
+
+        subgraph BusinessLogicLayer ["Tier 2: Business Logic Layer"]
+            Services["Services (BookingService, AuthService, PropertyService, AvailabilityService)"]
+            StateMachine["State Machine & ACID Transaction Runner"]
+            Controllers --> Services
+            Services --> StateMachine
+        end
+
+        subgraph DataAccessLayer ["Tier 3: Data Access Layer"]
+            Repositories["Repositories (BookingRepository, UserRepository, PropertyRepository, AvailabilityRepository)"]
+            Services --> Repositories
+        end
+    end
+
+    subgraph DataTier ["Database Container (MySQL 8.0+)"]
+        Tables[("MySQL Tables (users, roles, properties, sale_availability, bookings, booking_status_history)")]
+        Repositories -->|"SQL Queries / Connection Pool"| Tables
+    end
+
+    APIServices -->|"HTTPS / JSON REST API"| Routes

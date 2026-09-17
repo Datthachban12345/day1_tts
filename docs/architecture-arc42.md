@@ -1,4 +1,4 @@
-﻿# 📐 SYSTEM ARCHITECTURE DOCUMENT (ARC42)
+# 📐 SYSTEM ARCHITECTURE DOCUMENT (ARC42)
 ## Project: Home Viewing Booking System
 * **Version:** Phase 1 (MVP)
 * **Status:** Prototype / Academic & Research
@@ -403,9 +403,8 @@ flowchart TB
 
 ## 11. Risks and Technical Debt
 
-* **Backend Source Code Missing from the Current Repo:** The current repository contains only Frontend source and the database script (`database/booking.sql`); a REST API backend must be implemented soon according to the specification.
-* **Booking Time Slot Conflict (Race Condition):** When multiple customers book the same Sales time slot at the same time, the backend needs an appropriate database lock or transaction isolation mechanism to avoid conflicts.
-* **Notification Channel:** Phase 1 only defines a basic notification layer; actual delivery channels (Email SMTP / Web Push / SMS) must be integrated in a later phase.
+* **Booking Time Slot Conflict (Race Condition):** When multiple customers book the same Sales time slot at the same time, the backend uses Database Transaction and isolation mechanisms to detect conflicts (`BOOKING_CONFLICT`).
+* **Notification Channel:** Phase 1 defines an in-database notification layer; external delivery channels (Email SMTP / Web Push / SMS) can be plugged in during post-MVP phase.
 
 ---
 
@@ -415,15 +414,3 @@ flowchart TB
 * **Booking Lifecycle:** The life cycle of an appointment from creation (`PENDING`) until termination (`COMPLETED`/`CANCELLED`/`REJECTED`).
 * **Availability Slot:** An available working time slot declared by Sales for customers to book.
 * **Status History / Audit Log:** An immutable log tracking every appointment status change.
-# 📐 SYSTEM ARCHITECTURE DOCUMENT (ARC42)
-## Project: Home Viewing Booking System
-* **Version:** Phase 1 (MVP)  
-* **Status:** Prototype / Academic & Research
-
----
-
-## 1. Introduction and Goals
-
-### 1.1. Problem Statement
-The traditional real estate viewing booking process relies mainly on phone calls, fragmented messages, and manual record keeping. This leads to:
-* Duplicate appointments between customers and sal

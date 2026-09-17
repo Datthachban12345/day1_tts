@@ -1,0 +1,37 @@
+graph TB
+    subgraph Actors ["Tác nhân (Actors)"]
+        Customer["👤 Khách hàng (Customer)"]
+        Sales["👔 Chuyên viên tư vấn (Sales Staff)"]
+        Admin["👑 Quản trị viên (Administrator)"]
+    end
+
+    subgraph SystemBoundary ["Hệ thống Đặt lịch Xem Nhà (Home Viewing Booking System)"]
+        UC1["Tìm kiếm & lọc BĐS"]
+        UC2["Xem chi tiết BĐS & Lịch trống"]
+        UC3["Đặt lịch xem nhà"]
+        UC4["Theo dõi Lịch hẹn cá nhân"]
+        UC5["Hủy lịch hẹn hợp lệ"]
+        
+        UC6["Khai báo ca rảnh (Availability)"]
+        UC7["Tiếp nhận & Duyệt lịch (Confirm/Reject)"]
+        UC8["Xem lịch trình hôm nay & Hoàn tất xem nhà"]
+        
+        UC9["Quản lý người dùng & phân quyền RBAC"]
+        UC10["Quản lý danh mục Bất động sản"]
+        UC11["Giám sát toàn sàn & Audit Trail"]
+    end
+
+    Customer --> UC1
+    Customer --> UC2
+    Customer --> UC3
+    Customer --> UC4
+    Customer --> UC5
+
+    Sales --> UC6
+    Sales --> UC7
+    Sales --> UC8
+    Sales --> UC2
+
+    Admin --> UC9
+    Admin --> UC10
+    Admin --> UC11

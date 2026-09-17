@@ -387,7 +387,31 @@ pnpm dev
 
 Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 
-### Build and initialize the database
+### Run Automated Tests
+
+Run backend unit and integration tests:
+```bash
+cd backend
+pnpm test
+```
+
+Run frontend component tests:
+```bash
+cd frontend
+pnpm test
+```
+
+### Run with Docker Compose
+
+To start MySQL 8, Backend REST API, and Frontend with a single command:
+```bash
+docker compose up --build
+```
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:5000`
+- MySQL: `localhost:3306`
+
+### Build and initialize the database manually
 
 ```bash
 cd backend
