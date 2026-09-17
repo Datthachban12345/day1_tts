@@ -16,8 +16,8 @@ A web-based system that helps customers search for properties, schedule home vie
 - [Problem and Objective](#-problem-and-objective)
 - [Features by Role](#-features-by-role)
 - [MVP Scope](#-mvp-scope)
+- [High-Priority Features to Implement First](#high-priority-features-to-implement-first-48)
 - [Use Cases](#-use-cases)
-- [Class Diagram](#-class-diagram)
 - [Activity Diagram](#-activity-diagram)
 - [Sequence Diagram](#-sequence-diagram)
 - [Visual Documentation](#-visual-documentation)
@@ -79,17 +79,70 @@ stateDiagram-v2
 
 Out of scope for Phase 1: AI agents, automatic sales ranking, route optimization, automatic rescheduling, external calendar synchronization, behavioral analytics, and advanced reviews.
 
+## High-Priority Features to Implement First (48)
+
+| No. | Module | Feature | Impact | Short Description |
+| ---: | --- | --- | --- | --- |
+| 1 | Authentication | Customer registration | High | Create a customer account with email, password, name, and phone. |
+| 2 | Authentication | Email uniqueness validation | High | Prevent duplicate accounts using the same email address. |
+| 3 | Authentication | Password hashing | High | Store passwords securely with bcrypt hashing. |
+| 4 | Authentication | Customer login | High | Authenticate customers and return a JWT access token. |
+| 5 | Authentication | Sales login | High | Allow sales staff to access booking operations securely. |
+| 6 | Authentication | Admin login | High | Allow administrators to access protected management functions. |
+| 7 | Authentication | JWT verification middleware | High | Validate bearer tokens before protected API requests. |
+| 8 | Authentication | Role-based authorization | High | Restrict actions to `CUSTOMER`, `SALE`, or `ADMIN` roles. |
+| 9 | Authentication | Current user profile | Medium | Return the authenticated user's profile and role. |
+| 10 | Authentication | Account activation status | High | Block inactive accounts from authenticated operations. |
+| 11 | Property | Property listing | High | Display available properties with essential summary information. |
+| 12 | Property | Property detail | High | Show complete property information and media gallery. |
+| 13 | Property | Keyword search | High | Search properties by title, address, or district. |
+| 14 | Property | City filtering | Medium | Filter available properties by city. |
+| 15 | Property | District filtering | High | Filter available properties by district. |
+| 16 | Property | Price range filtering | High | Filter properties by minimum and maximum price. |
+| 17 | Property | Area filtering | Medium | Filter properties by minimum area. |
+| 18 | Property | Bedroom filtering | Medium | Filter properties by minimum bedroom count. |
+| 19 | Property | Property type filtering | High | Filter by apartment, house, villa, or townhouse. |
+| 20 | Property | Property pagination | Medium | Return property results with page, limit, and total pages. |
+| 21 | Property | Admin property creation | High | Let admins create a new available property listing. |
+| 22 | Property | Property media management | Medium | Attach ordered image media and identify the primary image. |
+| 23 | Availability | Sales availability listing | High | Show available time slots for a sales staff member. |
+| 24 | Availability | Sales availability configuration | High | Let sales staff create or replace their working time slots. |
+| 25 | Availability | Day-of-week validation | High | Validate that availability uses the database weekday range `1..7`. |
+| 26 | Availability | Time-range validation | High | Reject availability slots where end time is not after start time. |
+| 27 | Availability | Public sales availability | High | Allow customers to view a sales staff member's public slots. |
+| 28 | Booking | Customer booking creation | Critical | Create a viewing request for a property, date, and time slot. |
+| 29 | Booking | Assigned sales resolution | Critical | Use the property's assigned sales staff when no sales ID is supplied. |
+| 30 | Booking | Future booking date validation | High | Reject bookings scheduled in the past or with invalid dates. |
+| 31 | Booking | Slot availability validation | Critical | Ensure the selected time is inside the sales availability schedule. |
+| 32 | Booking | Double-booking prevention | Critical | Reject overlapping pending or confirmed bookings. |
+| 33 | Booking | ACID booking transaction | Critical | Save booking, status history, and notification atomically. |
+| 34 | Booking | Pending booking status | High | Set every newly created booking to `PENDING`. |
+| 35 | Booking | Customer booking list | High | Show bookings belonging only to the authenticated customer. |
+| 36 | Booking | Sales booking list | High | Show bookings assigned only to the authenticated sales staff. |
+| 37 | Booking | Admin booking list | High | Let admins monitor all bookings in the system. |
+| 38 | Booking | Booking detail and audit trail | High | Show booking information and immutable status history. |
+| 39 | Booking | Confirm booking | High | Allow sales staff to transition `PENDING` to `CONFIRMED`. |
+| 40 | Booking | Reject booking with reason | High | Allow sales staff to reject a request and record the reason. |
+| 41 | Booking | Customer cancellation | High | Allow customers to cancel eligible pending or confirmed bookings. |
+| 42 | Booking | Complete viewing | Medium | Allow sales staff to transition a confirmed viewing to `COMPLETED`. |
+| 43 | Notification | Booking-created notification | High | Notify sales staff when a new booking is created. |
+| 44 | Notification | Status-change notification | High | Notify the relevant user after a booking status transition. |
+| 45 | Notification | Notification inbox | Medium | List notifications belonging to the authenticated user. |
+| 46 | Notification | Mark notification as read | Medium | Update the read state of a user's notification. |
+| 47 | Quality and Security | API integration tests | High | Verify HTTP status codes, validation, authentication, and protected routes. |
+| 48 | Quality and Security | Contract and build validation | High | Keep SQL schema, OpenAPI, backend, frontend, and production builds aligned. |
+
 ## 🧩 Use Cases
 
-The system has three primary actors and the following main use cases:
+The use-case model below follows `docs/use_case.png` and defines the system boundary, three actors, the main booking operations, and the explicit `include` relationships.
+
+![Use-case diagram](docs/use_case.png)
 
 | Actor | Use cases |
 | --- | --- |
-| **Customer** | Register, login, search properties, filter properties, view property details, view sales availability, create booking, view booking history, cancel eligible booking, receive notifications |
-| **Sales Staff** | Login, manage availability, view assigned bookings, view customer details, confirm booking, reject booking, complete viewing, add booking notes, receive notifications |
-| **Admin** | Login, manage users, manage roles and account status, create and manage properties, manage property media, view all bookings, inspect booking history |
-
-### Use-case relationships
+| **Customer** | Register, login, search properties, view property details, create booking, check availability, view my bookings, view booking details, cancel booking, view notifications |
+| **Sales Staff** | Login, view assigned bookings, view booking details, confirm booking, reject booking, provide rejection reason, complete booking, manage availability, view notifications |
+| **Admin** | Login, manage users, manage roles, manage properties, manage property media, manage bookings, view notifications |
 
 ```mermaid
 flowchart LR
@@ -98,71 +151,56 @@ flowchart LR
     Admin[Admin]
 
     subgraph System[Home Viewing Booking System]
-        Auth((Register / Login))
-        Search((Search and Filter Properties))
-        Details((View Property Details))
-        Availability((Manage Availability))
+        Register((Register))
+        Login((Login))
+        Search((Search Properties))
+        PropertyDetails((View Property Details))
         CreateBooking((Create Booking))
-        ManageBooking((Process Booking))
-        TrackBooking((Track Booking History))
-        ManageUsers((Manage Users and Roles))
-        ManageProperties((Manage Properties and Media))
-        Notifications((Receive Notifications))
+        CheckAvailability((Check Availability))
+        MyBookings((View My Bookings))
+        BookingDetails((View Booking Details))
+        CancelBooking((Cancel Booking))
+        ViewNotifications((View Notifications))
+        AssignedBookings((View Assigned Bookings))
+        ConfirmBooking((Confirm Booking))
+        RejectBooking((Reject Booking))
+        RejectionReason((Provide Rejection Reason))
+        CompleteBooking((Complete Booking))
+        ManageAvailability((Manage Availability))
+        ManageUsers((Manage Users))
+        ManageRoles((Manage Roles))
+        ManageProperties((Manage Properties))
+        ManageMedia((Manage Property Media))
+        ManageBookings((Manage Bookings))
     end
 
-    Customer --> Auth
+    Customer --> Register
+    Customer --> Login
     Customer --> Search
-    Customer --> Details
+    Customer --> PropertyDetails
     Customer --> CreateBooking
-    Customer --> TrackBooking
-    Customer --> Notifications
-    Sales --> Auth
-    Sales --> Availability
-    Sales --> ManageBooking
-    Sales --> Notifications
-    Admin --> Auth
+    Customer --> MyBookings
+    Customer --> BookingDetails
+    Customer --> CancelBooking
+    Customer --> ViewNotifications
+    Sales --> Login
+    Sales --> AssignedBookings
+    Sales --> BookingDetails
+    Sales --> ConfirmBooking
+    Sales --> RejectBooking
+    Sales --> CompleteBooking
+    Sales --> ManageAvailability
+    Sales --> ViewNotifications
+    Admin --> Login
     Admin --> ManageUsers
+    Admin --> ManageRoles
     Admin --> ManageProperties
-    Admin --> ManageBooking
-```
+    Admin --> ManageBookings
+    Admin --> ViewNotifications
 
-## 🧱 Class Diagram
-
-The API follows the three-tier dependency direction:
-
-```mermaid
-classDiagram
-    class AuthController
-    class PropertyController
-    class BookingController
-    class AvailabilityController
-    class NotificationController
-
-    class AuthService
-    class PropertyService
-    class BookingService
-    class AvailabilityService
-    class NotificationService
-
-    class UserRepository
-    class PropertyRepository
-    class BookingRepository
-    class AvailabilityRepository
-    class NotificationRepository
-
-    AuthController --> AuthService
-    PropertyController --> PropertyService
-    BookingController --> BookingService
-    AvailabilityController --> AvailabilityService
-    NotificationController --> NotificationService
-
-    AuthService --> UserRepository
-    PropertyService --> PropertyRepository
-    BookingService --> BookingRepository
-    BookingService --> AvailabilityRepository
-    BookingService --> NotificationRepository
-    AvailabilityService --> AvailabilityRepository
-    NotificationService --> NotificationRepository
+    CreateBooking -.->|include| CheckAvailability
+    RejectBooking -.->|include| RejectionReason
+    ManageProperties -.->|include| ManageMedia
 ```
 
 ## 🔄 Activity Diagram
@@ -229,8 +267,6 @@ The mindmap describes the product scope, feature groups, MVP entities, key relat
 ![Booking workflow by role](docs/Screenshot%202026-09-12%20022553.png)
 
 ![Use-case diagram](docs/Screenshot%202026-09-12%20022621.png)
-
-![Use-case diagram source](docs/use_case.png)
 
 ![C4 component diagram](docs/c4_component_diagram_final_1789360986705.jpg)
 
