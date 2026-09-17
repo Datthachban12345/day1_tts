@@ -4,18 +4,22 @@ import { Booking, BookingStatus } from "../types/index.js";
 interface MyBookingsTabProps {
   bookings: Booking[];
   onCancelBooking: (bookingId: string, reason: string) => void;
+  onGetBookingDetail: (bookingId: string) => Promise<Booking>;
   onExploreMore: () => void;
 }
 
 export const MyBookingsTab: React.FC<MyBookingsTabProps> = ({
   bookings,
   onCancelBooking,
+  onGetBookingDetail,
   onExploreMore
 }) => {
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedBookingForHistory, setSelectedBookingForHistory] = useState<Booking | null>(null);
   const [cancelModalBooking, setCancelModalBooking] = useState<Booking | null>(null);
   const [cancelReason, setCancelReason] = useState("");
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
 
   const filteredBookings = bookings.filter((b) => {
     if (filterStatus === "ALL") return true;
@@ -62,6 +66,18 @@ export const MyBookingsTab: React.FC<MyBookingsTabProps> = ({
       onCancelBooking(cancelModalBooking.id, cancelReason || "Khách hàng có lịch bận đột xuất");
       setCancelModalBooking(null);
       setCancelReason("");
+    }
+  };
+
+  const handleOpenDetails = async (booking: Booking) => {
+    setDetailError(null);
+    setIsLoadingDetails(true);
+    try {
+      setSelectedBookingForHistory(await onGetBookingDetail(booking.id));
+    } catch (error) {
+      setDetailError(error instanceof Error ? error.message : "Không thể tải chi tiết booking.");
+    } finally {
+      setIsLoadingDetails(false);
     }
   };
 
@@ -183,10 +199,11 @@ export const MyBookingsTab: React.FC<MyBookingsTabProps> = ({
               {/* Actions */}
               <div className="flex lg:flex-col gap-2 w-full lg:w-auto">
                 <button
-                  onClick={() => setSelectedBookingForHistory(b)}
+                  onClick={() => void handleOpenDetails(b)}
+                  disabled={isLoadingDetails}
                   className="flex-1 lg:flex-none px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-lg transition-colors text-center"
                 >
-                  📜 Lịch Sử Trạng Thái ({b.history.length})
+                  {isLoadingDetails ? "Đang tải..." : `📜 Chi Tiết Booking (${b.history.length})`}
                 </button>
 
                 {(b.status === "PENDING" || b.status === "CONFIRMED") && (
@@ -204,6 +221,11 @@ export const MyBookingsTab: React.FC<MyBookingsTabProps> = ({
       )}
 
       {/* History Modal (Audit Log Timeline) */}
+      {detailError && (
+        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-700">
+          {detailError}
+        </div>
+      )}
       {selectedBookingForHistory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 border border-gray-100">

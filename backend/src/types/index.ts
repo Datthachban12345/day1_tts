@@ -114,6 +114,7 @@ export interface AuthTokenPayload {
 }
 
 export interface PropertyFilterDTO {
+  search?: string;
   city?: string;
   district?: string;
   minPrice?: number;

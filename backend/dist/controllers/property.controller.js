@@ -6,8 +6,9 @@ const propertyService = new property_service_js_1.PropertyService();
 class PropertyController {
     async getProperties(req, res, next) {
         try {
-            const { city, district, minPrice, maxPrice, minArea, bedrooms, propertyType, page, limit } = req.query;
+            const { search, city, district, minPrice, maxPrice, minArea, bedrooms, propertyType, page, limit } = req.query;
             const result = await propertyService.searchProperties({
+                search: search,
                 city: city,
                 district: district,
                 minPrice: minPrice ? Number(minPrice) : undefined,

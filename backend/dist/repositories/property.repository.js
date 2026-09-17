@@ -14,6 +14,11 @@ class PropertyRepository {
         const offset = (page - 1) * limit;
         let whereClause = `WHERE p.status = 'AVAILABLE'`;
         const params = [];
+        if (filter.search) {
+            whereClause += ` AND (p.title LIKE ? OR p.address LIKE ? OR p.district LIKE ?)`;
+            const search = `%${filter.search}%`;
+            params.push(search, search, search);
+        }
         if (filter.city) {
             whereClause += ` AND p.city LIKE ?`;
             params.push(`%${filter.city}%`);

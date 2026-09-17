@@ -13,6 +13,10 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
 
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem("homeviewing.accessToken");
+      window.dispatchEvent(new Event("homeviewing.auth-expired"));
+    }
     throw new Error(payload.message || payload.error || `API request failed: ${response.status}`);
   }
   return payload;

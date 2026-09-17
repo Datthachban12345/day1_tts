@@ -1,5 +1,6 @@
-﻿import React, { useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Property } from "../types/index.js";
+import { getSaleAvailability, AvailabilitySlot } from "../services/availability.service.js";
 
 interface BookingModalProps {
   property: Property | null;
@@ -12,7 +13,7 @@ interface BookingModalProps {
     customerName: string;
     customerPhone: string;
     customerNote: string;
-  }) => void;
+  }) => void | Promise<void>;
 }
 
 export const BookingModal: React.FC<BookingModalProps> = ({
@@ -21,31 +22,61 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   onClose,
   onSubmitBooking
 }) => {
-  if (!isOpen || !property) return null;
-
   const today = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(today);
-  const [selectedSlot, setSelectedSlot] = useState(property.assignedSale.availableSlots[0] || "09:00 - 10:30");
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [slotError, setSlotError] = useState<string | null>(null);
   const [customerName, setCustomerName] = useState("Nguyễn Văn Khách");
   const [customerPhone, setCustomerPhone] = useState("0912 345 678");
   const [customerNote, setCustomerNote] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!isOpen || !property?.assignedSale.id || !selectedDate) return;
+    const loadSlots = async () => {
+      setIsLoadingSlots(true);
+      setSlotError(null);
+      try {
+        const slots = await getSaleAvailability(property.assignedSale.id);
+        const date = new Date(`${selectedDate}T00:00:00`);
+        const dayOfWeek = date.getDay() === 0 ? 7 : date.getDay();
+        const matchingSlots = slots.filter((slot) => slot.dayOfWeek === dayOfWeek);
+        setAvailableSlots(matchingSlots);
+        setSelectedSlot(matchingSlots[0] ? `${matchingSlots[0].startTime.slice(0, 5)} - ${matchingSlots[0].endTime.slice(0, 5)}` : "");
+      } catch (error) {
+        setAvailableSlots([]);
+        setSelectedSlot("");
+        setSlotError(error instanceof Error ? error.message : "Không thể tải ca rảnh.");
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    };
+    void loadSlots();
+  }, [isOpen, property?.assignedSale.id, selectedDate]);
+
+  if (!isOpen || !property) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmitBooking({
-      property,
-      bookingDate: selectedDate,
-      timeSlot: selectedSlot,
-      customerName,
-      customerPhone,
-      customerNote
-    });
-    setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      onClose();
-    }, 1800);
+    if (!selectedSlot) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      await onSubmitBooking({ property, bookingDate: selectedDate, timeSlot: selectedSlot, customerName, customerPhone, customerNote });
+      setIsSuccess(true);
+      setTimeout(() => {
+        setIsSuccess(false);
+        onClose();
+      }, 1800);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Không thể tạo booking.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,6 +112,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+            {submitError && <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">{submitError}</div>}
             {/* Property Summary Card */}
             <div className="flex gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200 items-center">
               <img
@@ -145,16 +177,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   2. CHỌN KHUNG GIỜ RẢNH CỦA SALE *
                 </label>
                 <select
+                  required
+                  disabled={isLoadingSlots || availableSlots.length === 0}
                   value={selectedSlot}
                   onChange={(e) => setSelectedSlot(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold focus:border-red-500 focus:outline-hidden bg-white"
                 >
-                  {property.assignedSale.availableSlots.map((slot) => (
-                    <option key={slot} value={slot}>
-                      🕒 {slot}
+                  {isLoadingSlots && <option value="">Đang tải ca rảnh...</option>}
+                  {!isLoadingSlots && availableSlots.length === 0 && <option value="">Không có ca rảnh trong ngày này</option>}
+                  {availableSlots.map((slot) => {
+                    const label = `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`;
+                    return (
+                    <option key={slot.id} value={label}>
+                      🕒 {label}
                     </option>
-                  ))}
+                    );
+                  })}
                 </select>
+                {slotError && <p className="mt-1 text-[11px] font-semibold text-red-600">{slotError}</p>}
               </div>
             </div>
 
@@ -219,10 +259,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 Hủy Bỏ
               </button>
               <button
+                disabled={isSubmitting || isLoadingSlots || !selectedSlot}
                 type="submit"
                 className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-bold rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5"
               >
-                <span>🚀</span> XÁC NHẬN ĐẶT LỊCH XEM NHÀ
+                <span>🚀</span> {isSubmitting ? "ĐANG GỬI..." : "XÁC NHẬN ĐẶT LỊCH XEM NHÀ"}
               </button>
             </div>
           </form>

@@ -14,6 +14,12 @@ export class PropertyRepository {
     let whereClause = `WHERE p.status = 'AVAILABLE'`;
     const params: any[] = [];
 
+    if (filter.search) {
+      whereClause += ` AND (p.title LIKE ? OR p.address LIKE ? OR p.district LIKE ?)`;
+      const search = `%${filter.search}%`;
+      params.push(search, search, search);
+    }
+
     if (filter.city) {
       whereClause += ` AND p.city LIKE ?`;
       params.push(`%${filter.city}%`);

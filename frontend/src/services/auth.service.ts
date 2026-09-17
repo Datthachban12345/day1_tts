@@ -36,3 +36,8 @@ export async function register(data: RegisterRequest): Promise<AuthResponse> {
 export function logout(): void {
   localStorage.removeItem("homeviewing.accessToken");
 }
+
+export async function getCurrentUser(): Promise<AuthResponse["user"]> {
+  const response = await apiRequest<{ data: AuthResponse["user"] }>("/auth/me");
+  return response.data;
+}

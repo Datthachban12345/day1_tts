@@ -9,8 +9,10 @@ import { AdminTab } from "./components/AdminTab.js";
 import { AuthPage } from "./components/AuthPage.js";
 import { Footer } from "./components/Footer.js";
 import { Property, Booking, UserRole } from "./types/index.js";
-import { getProperties } from "./services/property.service.js";
-import { createBooking, getAdminBookings, getCustomerBookings, getSaleBookings, updateBookingStatus } from "./services/booking.service.js";
+import { createProperty, getProperties } from "./services/property.service.js";
+import { createBooking, getAdminBookings, getBookingDetail, getCustomerBookings, getSaleBookings, updateBookingStatus } from "./services/booking.service.js";
+import { getCurrentUser, logout } from "./services/auth.service.js";
+import { AdminUser, getAdminUsers, updateAdminUserStatus } from "./services/admin.service.js";
 
 const getRoleFromPath = (): UserRole => {
   if (window.location.pathname === "/sale") return "SALE";
@@ -24,6 +26,8 @@ const getTabForRole = (role: UserRole): "home" | "my-bookings" | "sales-dashboar
   return "home";
 };
 
+const getPathForRole = (role: UserRole) => role === "SALE" ? "/sale" : role === "ADMIN" ? "/admin" : "/customer";
+
 export default function App() {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const isAuthPage = currentPath === "/login" || currentPath === "/register";
@@ -31,6 +35,14 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"home" | "my-bookings" | "sales-dashboard" | "admin-portal">(() =>
     getTabForRole(getRoleFromPath())
   );
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCity, setSelectedCity] = useState("Hà Nội");
+  const [selectedDistrict, setSelectedDistrict] = useState("ALL");
+  const [selectedType, setSelectedType] = useState("ALL");
+  const [selectedPriceRange, setSelectedPriceRange] = useState("ALL");
+  const [selectedBedrooms, setSelectedBedrooms] = useState("ALL");
+  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem("homeviewing.accessToken") && !isAuthPage) {
@@ -45,41 +57,79 @@ export default function App() {
       setActiveTab(getTabForRole(role));
     };
 
+    const handleAuthExpired = () => {
+      window.history.replaceState({}, "", "/login");
+      setCurrentPath("/login");
+    };
+
     window.addEventListener("popstate", handleRouteChange);
-    return () => window.removeEventListener("popstate", handleRouteChange);
+    window.addEventListener("homeviewing.auth-expired", handleAuthExpired);
+    return () => {
+      window.removeEventListener("popstate", handleRouteChange);
+      window.removeEventListener("homeviewing.auth-expired", handleAuthExpired);
+    };
   }, []);
+
+  useEffect(() => {
+    if (isAuthPage || !localStorage.getItem("homeviewing.accessToken")) return;
+    void getCurrentUser().then((user) => {
+      const nextPath = getPathForRole(user.role);
+      setCurrentRole(user.role);
+      setActiveTab(getTabForRole(user.role));
+      if (currentPath !== nextPath) {
+        window.history.replaceState({}, "", nextPath);
+        setCurrentPath(nextPath);
+      }
+    }).catch(() => {
+      logout();
+      window.history.replaceState({}, "", "/login");
+      setCurrentPath("/login");
+    });
+  }, [isAuthPage]);
 
   const [properties, setProperties] = useState<Property[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthPage || !localStorage.getItem("homeviewing.accessToken")) return;
 
     const loadData = async () => {
+      setIsLoading(true);
+      setLoadError(null);
       try {
-        const params = new URLSearchParams({ city: "Hà Nội", page: "1", limit: "50" });
+        const params = new URLSearchParams({ city: selectedCity, page: "1", limit: "50" });
+        if (searchTerm) params.set("search", searchTerm);
+        if (selectedDistrict !== "ALL") params.set("district", selectedDistrict);
+        if (selectedType !== "ALL") params.set("propertyType", selectedType);
+        if (selectedBedrooms !== "ALL") params.set("bedrooms", selectedBedrooms);
+        if (selectedPriceRange === "UNDER_5B") params.set("maxPrice", "5000000000");
+        if (selectedPriceRange === "5B_10B") {
+          params.set("minPrice", "5000000000");
+          params.set("maxPrice", "10000000000");
+        }
+        if (selectedPriceRange === "10B_20B") {
+          params.set("minPrice", "10000000000");
+          params.set("maxPrice", "20000000000");
+        }
+        if (selectedPriceRange === "OVER_20B") params.set("minPrice", "20000000000");
         const [loadedProperties, loadedBookings] = await Promise.all([
           getProperties(params),
           currentRole === "SALE" ? getSaleBookings() : currentRole === "ADMIN" ? getAdminBookings() : getCustomerBookings()
         ]);
         setProperties(loadedProperties);
         setBookings(loadedBookings);
+        if (currentRole === "ADMIN") setUsers(await getAdminUsers());
       } catch (error) {
         setLoadError(error instanceof Error ? error.message : "Không thể tải dữ liệu từ API.");
+      } finally {
+        setIsLoading(false);
       }
     };
     void loadData();
-  }, [currentRole, isAuthPage]);
-
-  // Search and Filter States
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCity, setSelectedCity] = useState("Hanoi");
-  const [selectedDistrict, setSelectedDistrict] = useState("ALL");
-  const [selectedType, setSelectedType] = useState("ALL");
-  const [selectedPriceRange, setSelectedPriceRange] = useState("ALL");
-  const [selectedBedrooms, setSelectedBedrooms] = useState("ALL");
-  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
+  }, [currentRole, isAuthPage, selectedCity, searchTerm, selectedDistrict, selectedType, selectedBedrooms, selectedPriceRange]);
 
   // Modal States
   const [bookingModalProperty, setBookingModalProperty] = useState<Property | null>(null);
@@ -175,8 +225,19 @@ export default function App() {
     setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
 
+  const handleUserStatusChange = async (user: AdminUser) => {
+    await updateAdminUserStatus(user.id, !user.isActive);
+    setUsers((current) => current.map((item) => item.id === user.id ? { ...item, isActive: !item.isActive } : item));
+  };
+
+  const handleCreateProperty = async (data: Parameters<typeof createProperty>[0]) => {
+    await createProperty(data);
+    const params = new URLSearchParams({ city: selectedCity, page: "1", limit: "50" });
+    setProperties(await getProperties(params));
+  };
+
   const handleAuthenticated = (role: UserRole) => {
-    const nextPath = role === "SALE" ? "/sale" : role === "ADMIN" ? "/admin" : "/customer";
+    const nextPath = getPathForRole(role);
     window.history.pushState({}, "", nextPath);
     setCurrentPath(nextPath);
     setCurrentRole(role);
@@ -199,8 +260,16 @@ export default function App() {
         currentRole={currentRole}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        onLogout={() => {
+          logout();
+          window.history.replaceState({}, "", "/login");
+          setCurrentPath("/login");
+        }}
         bookingCount={visibleBookings.length}
       />
+
+      {isLoading && <div className="border-b border-blue-100 bg-blue-50 px-4 py-2 text-center text-xs font-semibold text-blue-700">Đang tải dữ liệu...</div>}
+      {loadError && <div role="alert" className="border-b border-red-100 bg-red-50 px-4 py-2 text-center text-xs font-semibold text-red-700">{loadError}</div>}
 
       {/* Main Content Areas */}
       <main className="flex-1">
@@ -314,6 +383,7 @@ export default function App() {
           <MyBookingsTab
             bookings={visibleBookings}
             onCancelBooking={handleCancelBooking}
+            onGetBookingDetail={getBookingDetail}
             onExploreMore={() => setActiveTab("home")}
           />
         )}
@@ -328,7 +398,7 @@ export default function App() {
         )}
 
         {activeTab === "admin-portal" && currentRole === "ADMIN" && (
-          <AdminTab properties={properties} bookings={visibleBookings} />
+          <AdminTab properties={properties} bookings={visibleBookings} users={users} onToggleUserStatus={handleUserStatusChange} onCreateProperty={handleCreateProperty} />
         )}
       </main>
 

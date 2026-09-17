@@ -53,3 +53,19 @@ export async function getProperties(params: URLSearchParams): Promise<Property[]
   const result = await apiRequest<{ data: PropertyApiRecord[] }>(`/properties?${params}`);
   return result.data.map(toProperty);
 }
+
+export async function createProperty(data: {
+  title: string;
+  description?: string;
+  property_type: PropertyType;
+  price: number;
+  area: number;
+  bedrooms: number;
+  bathrooms: number;
+  address: string;
+  district: string;
+  city: string;
+  mediaUrls?: string[];
+}): Promise<void> {
+  await apiRequest("/properties", { method: "POST", body: JSON.stringify(data) });
+}

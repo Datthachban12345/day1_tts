@@ -74,3 +74,8 @@ export async function getAdminBookings(): Promise<Booking[]> {
   const result = await apiRequest<{ data: any[] }>("/bookings/admin");
   return result.data.map(mapBooking);
 }
+
+export async function getBookingDetail(id: string): Promise<Booking> {
+  const result = await apiRequest<{ data: any }>(`/bookings/${id}`);
+  return mapBooking(result.data);
+}

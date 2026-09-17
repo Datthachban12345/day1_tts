@@ -5,6 +5,7 @@ interface NavbarProps {
   currentRole: UserRole;
   activeTab: "home" | "my-bookings" | "sales-dashboard" | "admin-portal";
   onTabChange: (tab: "home" | "my-bookings" | "sales-dashboard" | "admin-portal") => void;
+  onLogout: () => void;
   bookingCount: number;
 }
 
@@ -12,6 +13,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRole,
   activeTab,
   onTabChange,
+  onLogout,
   bookingCount
 }) => {
   return (
@@ -155,6 +157,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="hidden sm:inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow-sm transition-all"
             >
               <span>+</span> Đăng Tin BĐS
+            </button>
+            <button
+              onClick={onLogout}
+              className="hidden sm:inline-flex items-center gap-1.5 border border-gray-200 text-gray-600 hover:border-red-200 hover:text-red-600 text-xs font-bold px-3.5 py-2 rounded-lg transition-all"
+            >
+              Đăng xuất
             </button>
           </div>
         </div>

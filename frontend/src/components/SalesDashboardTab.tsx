@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Booking } from "../types/index.js";
+import { getMyAvailability, setMyAvailability } from "../services/availability.service.js";
 
 // ─── Availability Types ───────────────────────────────────────────────────────
 type DayKey = "T2" | "T3" | "T4" | "T5" | "T6" | "T7" | "CN";
@@ -53,11 +54,34 @@ export const SalesDashboardTab: React.FC<SalesDashboardTabProps> = ({
   onCompleteBooking
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<"overview" | "pending" | "confirmed" | "availability">("overview");
-  const [rejectModalId, setRejectModalId] = useState<number | null>(null);
+  const [rejectModalId, setRejectModalId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [slots, setSlots] = useState<SlotGrid>(buildDefaultSlots);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        const savedSlots = await getMyAvailability();
+        const slotTimes = new Map(SLOTS.map((slot) => [slot.key, slot.time.replace("–", "-").replaceAll(" ", "").split("-")]));
+        const nextGrid = buildDefaultSlots();
+        for (const slot of savedSlots) {
+          const dayKey = DAYS.find((day) => day.key === (["", "T2", "T3", "T4", "T5", "T6", "T7", "CN"] as const)[slot.dayOfWeek])?.key;
+          const matchingSlot = SLOTS.find((item) => {
+            const [start, end] = slotTimes.get(item.key) || [];
+            return start === slot.startTime.slice(0, 5).replace(":", "") && end === slot.endTime.slice(0, 5).replace(":", "");
+          });
+          if (dayKey && matchingSlot) nextGrid[dayKey][matchingSlot.key] = true;
+        }
+        setSlots(nextGrid);
+      } catch (error) {
+        setAvailabilityError(error instanceof Error ? error.message : "Không thể tải ca rảnh.");
+      }
+    };
+    void loadAvailability();
+  }, []);
 
   const toggleSlot = (day: DayKey, slot: SlotKey) => {
     setSlots((prev) => ({
@@ -66,9 +90,21 @@ export const SalesDashboardTab: React.FC<SalesDashboardTabProps> = ({
     }));
   };
 
-  const handleSaveAvailability = () => {
-    setSavedMsg(true);
-    setTimeout(() => setSavedMsg(false), 2500);
+  const handleSaveAvailability = async () => {
+    setAvailabilityError(null);
+    try {
+      const dayNumbers: Record<DayKey, number> = { T2: 1, T3: 2, T4: 3, T5: 4, T6: 5, T7: 6, CN: 7 };
+      const payloadSlots = Object.entries(slots).flatMap(([day, daySlots]) => Object.entries(daySlots).filter(([, enabled]) => enabled).map(([slotKey]) => {
+        const slot = SLOTS.find((item) => item.key === slotKey)!;
+        const [startTime, endTime] = slot.time.split("–");
+        return { dayOfWeek: dayNumbers[day as DayKey], startTime: `${startTime.trim()}:00`, endTime: `${endTime.trim()}:00` };
+      }));
+      await setMyAvailability(payloadSlots);
+      setSavedMsg(true);
+      setTimeout(() => setSavedMsg(false), 2500);
+    } catch (error) {
+      setAvailabilityError(error instanceof Error ? error.message : "Không thể lưu ca rảnh.");
+    }
   };
 
   const totalOpenSlots = Object.values(slots).reduce(
