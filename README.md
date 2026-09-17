@@ -137,12 +137,16 @@ Out of scope for Phase 1: AI agents, automatic sales ranking, route optimization
 The use-case model below follows `docs/use_case.png` and defines the system boundary, three actors, the main booking operations, and the explicit `include` relationships.
 
 ![Use-case diagram](docs/use_case.png)
-
+ 
 | Actor | Use cases |
 | --- | --- |
 | **Customer** | Register, login, search properties, view property details, create booking, check availability, view my bookings, view booking details, cancel booking, view notifications |
 | **Sales Staff** | Login, view assigned bookings, view booking details, confirm booking, reject booking, provide rejection reason, complete booking, manage availability, view notifications |
 | **Admin** | Login, manage users, manage roles, manage properties, manage property media, manage bookings, view notifications |
+
+## CLass Diagram
+ ![DB diagram](docs/Diagram - localhost.png)
+
 
 ## 🔄 Activity Diagram
 
@@ -202,15 +206,6 @@ sequenceDiagram
 The mindmap describes the product scope, feature groups, MVP entities, key relationships, and UI/UX direction.
 
 ![Home Viewing Booking System product mindmap](docs/Business%20Plan.png)
-
-### Workflow and use-case diagrams
-
-![Booking workflow by role](docs/Screenshot%202026-09-12%20022553.png)
-
-![Use-case diagram](docs/Screenshot%202026-09-12%20022621.png)
-
-![C4 component diagram](docs/c4_component_diagram_final_1789360986705.jpg)
-
 
 ### Design files and source documents
 
