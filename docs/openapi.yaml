@@ -109,6 +109,11 @@ paths:
           schema:
             type: string
           example: Cau Giay
+        - name: search
+          in: query
+          description: Search by property title, address, or district
+          schema:
+            type: string
         - name: minPrice
           in: query
           schema:
@@ -164,7 +169,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Property'
+                $ref: '#/components/schemas/PropertyCreateResponse'
         '403':
           $ref: '#/components/responses/ForbiddenError'
 
@@ -587,7 +592,7 @@ components:
           format: uuid
         title:
           type: string
-        propertyType:
+        property_type:
           type: string
           enum: [APARTMENT, HOUSE, VILLA, TOWNHOUSE]
         price:
@@ -606,7 +611,7 @@ components:
           type: string
         status:
           type: string
-          enum: [AVAILABLE, SOLD, RENTED, INACTIVE]
+          enum: [AVAILABLE, SOLD, RENTED, UNAVAILABLE]
         thumbnailUrl:
           type: string
 
@@ -617,7 +622,7 @@ components:
           properties:
             description:
               type: string
-            assignedSaleId:
+            assigned_sale_id:
               type: string
               format: uuid
             media:
@@ -641,11 +646,11 @@ components:
 
     CreatePropertyRequest:
       type: object
-      required: [title, propertyType, price, area, address, district, city]
+      required: [title, property_type, price, area, address, district, city]
       properties:
         title:
           type: string
-        propertyType:
+        property_type:
           type: string
           enum: [APARTMENT, HOUSE, VILLA, TOWNHOUSE]
         price:
@@ -664,10 +669,27 @@ components:
           type: string
         description:
           type: string
+        assigned_sale_id:
+          type: string
+          format: uuid
         mediaUrls:
           type: array
           items:
             type: string
+            format: uri
+
+    PropertyCreateResponse:
+      type: object
+      required: [success, data]
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Tạo bất động sản thành công.
+        data:
+          $ref: '#/components/schemas/Property'
 
     PropertyListResponse:
       type: object

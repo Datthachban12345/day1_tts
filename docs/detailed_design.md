@@ -166,7 +166,7 @@ classDiagram
         -propertyRepo: PropertyRepository
         +searchProperties(filter: PropertyFilterDTO): Promise~PaginatedResult~
         +getPropertyDetails(id: number): Promise~PropertyDetail~
-        +createProperty(data: CreatePropertyDTO, adminId: number): Promise~Property~
+        +createProperty(data: CreatePropertyDTO, adminId: string): Promise~Property~
     }
 
     class AuthService {
@@ -180,31 +180,31 @@ classDiagram
     %% Data Access Tier (Repositories)
     class BookingRepository {
         -pool: Pool
-        +findById(id: number): Promise~Booking~
-        +findByCustomer(customerId: number, status?: string): Promise~Booking[]~
-        +findBySale(saleId: number, status?: string): Promise~Booking[]~
+        +findById(id: string): Promise~Booking~
+        +findByCustomer(customerId: string, status?: string): Promise~Booking[]~
+        +findBySale(saleId: string, status?: string): Promise~Booking[]~
         +findAll(status?: string): Promise~Booking[]~
-        +findConflicts(saleId: number, date: string, startTime: string, endTime: string): Promise~Booking[]~
-        +createWithTransaction(data: CreateBookingDTO, actorId: number): Promise~Booking~
-        +updateStatusWithHistory(bookingId: number, oldStatus: string, newStatus: string, actorId: number, reason?: string): Promise~void~
-        +getStatusHistory(bookingId: number): Promise~BookingStatusHistory[]~
+        +findConflicts(saleId: string, date: string, startTime: string, endTime: string): Promise~Booking[]~
+        +createWithTransaction(data: CreateBookingDTO, actorId: string): Promise~Booking~
+        +updateStatusWithHistory(bookingId: string, oldStatus: string, newStatus: string, actorId: string, reason?: string): Promise~void~
+        +getStatusHistory(bookingId: string): Promise~BookingStatusHistory[]~
     }
 
     class PropertyRepository {
         -pool: Pool
         +findAll(filter: PropertyFilterDTO): Promise~Property[]~
         +count(filter: PropertyFilterDTO): Promise~number~
-        +findById(id: number): Promise~PropertyDetail~
+        +findById(id: string): Promise~Property~
         +create(data: CreatePropertyDTO): Promise~Property~
-        +addMedia(propertyId: number, mediaUrls: string[]): Promise~void~
+        +addMedia(propertyId: string, mediaUrls: string[]): Promise~void~
     }
 
     class UserRepository {
         -pool: Pool
         +findByEmail(email: string): Promise~User~
-        +findById(id: number): Promise~UserProfile~
+        +findById(id: string): Promise~UserProfile~
         +create(user: CreateUserDTO): Promise~User~
-        +updateActiveStatus(id: number, isActive: boolean): Promise~void~
+        +updateActiveStatus(id: string, isActive: boolean): Promise~void~
     }
 
     %% Relationships
