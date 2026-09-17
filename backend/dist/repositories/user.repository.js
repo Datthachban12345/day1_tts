@@ -10,7 +10,7 @@ class UserRepository {
     }
     async findByEmail(email) {
         const query = `
-      SELECT u.*, r.name as role_name 
+      SELECT u.*, r.code as role_name 
       FROM users u
       JOIN roles r ON u.role_id = r.id
       WHERE u.email = ?
@@ -21,7 +21,7 @@ class UserRepository {
     }
     async findById(id) {
         const query = `
-      SELECT u.id, u.email, u.full_name as fullName, u.phone, r.name as role, u.is_active as isActive, u.created_at as createdAt
+      SELECT u.id, u.email, u.full_name as fullName, u.phone, r.code as role, u.is_active as isActive, u.created_at as createdAt
       FROM users u
       JOIN roles r ON u.role_id = r.id
       WHERE u.id = ?
@@ -32,7 +32,7 @@ class UserRepository {
     }
     async findAll(role) {
         let query = `
-      SELECT u.id, u.email, u.full_name as fullName, u.phone, r.name as role, u.is_active as isActive, u.created_at as createdAt
+      SELECT u.id, u.email, u.full_name as fullName, u.phone, r.code as role, u.is_active as isActive, u.created_at as createdAt
       FROM users u
       JOIN roles r ON u.role_id = r.id
     `;

@@ -6,6 +6,7 @@ import { BookingModal } from "./components/BookingModal.js";
 import { MyBookingsTab } from "./components/MyBookingsTab.js";
 import { SalesDashboardTab } from "./components/SalesDashboardTab.js";
 import { AdminTab } from "./components/AdminTab.js";
+import { AuthPage } from "./components/AuthPage.js";
 import { Footer } from "./components/Footer.js";
 import { Property, Booking, UserRole } from "./types/index.js";
 import { getProperties } from "./services/property.service.js";
@@ -24,17 +25,21 @@ const getTabForRole = (role: UserRole): "home" | "my-bookings" | "sales-dashboar
 };
 
 export default function App() {
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const isAuthPage = currentPath === "/login" || currentPath === "/register";
   const [currentRole, setCurrentRole] = useState<UserRole>(getRoleFromPath);
   const [activeTab, setActiveTab] = useState<"home" | "my-bookings" | "sales-dashboard" | "admin-portal">(() =>
     getTabForRole(getRoleFromPath())
   );
 
   useEffect(() => {
-    if (window.location.pathname === "/") {
-      window.history.replaceState({}, "", "/customer");
+    if (!localStorage.getItem("homeviewing.accessToken") && !isAuthPage) {
+      window.history.replaceState({}, "", "/login");
+      setCurrentPath("/login");
     }
 
     const handleRouteChange = () => {
+      setCurrentPath(window.location.pathname);
       const role = getRoleFromPath();
       setCurrentRole(role);
       setActiveTab(getTabForRole(role));
@@ -49,6 +54,8 @@ export default function App() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isAuthPage || !localStorage.getItem("homeviewing.accessToken")) return;
+
     const loadData = async () => {
       try {
         const params = new URLSearchParams({ city: "Hà Nội", page: "1", limit: "50" });
@@ -63,7 +70,7 @@ export default function App() {
       }
     };
     void loadData();
-  }, [currentRole]);
+  }, [currentRole, isAuthPage]);
 
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState("");
@@ -167,6 +174,23 @@ export default function App() {
     const booking = await updateBookingStatus(bookingId, "COMPLETED");
     setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
+
+  const handleAuthenticated = (role: UserRole) => {
+    const nextPath = role === "SALE" ? "/sale" : role === "ADMIN" ? "/admin" : "/customer";
+    window.history.pushState({}, "", nextPath);
+    setCurrentPath(nextPath);
+    setCurrentRole(role);
+    setActiveTab(getTabForRole(role));
+  };
+
+  if (isAuthPage) {
+    return (
+      <AuthPage
+        initialMode={currentPath === "/register" ? "register" : "login"}
+        onAuthenticated={handleAuthenticated}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">

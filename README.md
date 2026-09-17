@@ -144,8 +144,9 @@ The use-case model below follows `docs/use_case.png` and defines the system boun
 | **Sales Staff** | Login, view assigned bookings, view booking details, confirm booking, reject booking, provide rejection reason, complete booking, manage availability, view notifications |
 | **Admin** | Login, manage users, manage roles, manage properties, manage property media, manage bookings, view notifications |
 
-## CLass Diagram
- ![DB diagram](docs/Diagram - localhost.png)
+## Class Diagram
+
+![DB diagram](docs/Diagram%20-%20localhost.png)
 
 
 ## 🔄 Activity Diagram
@@ -262,20 +263,92 @@ bookings.sale_id     → users.id
 
 ## 🖥️ UI/UX Overview
 
+The following screen flows are the UX acceptance criteria for the MVP. Each step must be reachable, preserve the selected record, and provide loading, empty, success, and error states.
+
 ### Customer flow
 
-`Home → Property Search → Property List → Property Details → Select Date & Time → Booking Confirmation → Booking Status`
+```text
+Home
+    ↓
+Search Properties
+    ↓
+Property List
+    ↓
+Property Details
+    ↓
+Create Booking
+    ↓
+Select Date/Time
+    ↓
+Confirm Booking
+    ↓
+Booking Success
+    ↓
+My Bookings
+    ↓
+Booking Details
+```
 
-| Screen | Content |
+| Screen | Required UX behavior |
 | --- | --- |
-| Home/Search | Search, filters, and available properties |
-| Property List | Image, title, location, price, area, and bedrooms |
-| Property Details | Gallery, address, details, description, and booking action |
-| Booking | Date, start/end time, and customer note |
-| My Bookings | Bookings, statuses, history, and cancellation actions |
-| Sales Dashboard | Daily schedule, customer information, and booking actions |
+| Home | Provide the primary search entry point and clear navigation to property discovery. |
+| Search Properties | Accept keyword and filter criteria without losing the current search state. |
+| Property List | Display result count, pagination/loading state, empty state, and a link to property details. |
+| Property Details | Display gallery, price, location, specifications, assigned sales staff, availability, and the booking action. |
+| Create Booking | Start a booking for the selected property and preserve the property context. |
+| Select Date/Time | Load valid sales availability and prevent unavailable or conflicting slots. |
+| Confirm Booking | Show a complete review of property, date, time, and customer note before submission. |
+| Booking Success | Show success state, booking identifier, current `PENDING` status, and link to My Bookings. |
+| My Bookings | List only the current customer's bookings with status filters and cancellation actions. |
+| Booking Details | Show booking data, sales/customer data, status, notes, and the full audit timeline. |
 
-Design principles: keep the `Search → Property → Book` flow short, make statuses easy to understand, support desktop/mobile layouts, and maintain consistent UI components.
+### Sales Staff flow
+
+```text
+Login
+    ↓
+Dashboard
+    ↓
+Assigned Bookings
+    ↓
+Booking Details
+    ├── Confirm
+    ├── Reject
+    └── Complete
+```
+
+| Screen | Required UX behavior |
+| --- | --- |
+| Login | Authenticate the sales staff account and redirect to the sales dashboard. |
+| Dashboard | Summarize pending, confirmed, completed bookings and availability status. |
+| Assigned Bookings | Display only bookings assigned to the authenticated sales staff member. |
+| Booking Details | Show customer, property, schedule, notes, status history, and available actions. |
+| Confirm | Confirm a pending booking and notify the customer with the updated status. |
+| Reject | Require a rejection reason, save it to the audit history, and notify the customer. |
+| Complete | Complete a confirmed viewing after the appointment. |
+
+### Admin flow
+
+```text
+Login
+    ↓
+Dashboard
+    ├── Users
+    ├── Roles
+    ├── Properties
+    └── Bookings
+```
+
+| Screen | Required UX behavior |
+| --- | --- |
+| Login | Authenticate the administrator and redirect to the admin dashboard. |
+| Dashboard | Show system-level KPIs and navigation to all management areas. |
+| Users | List users, create users, filter by role, and activate or deactivate accounts. |
+| Roles | View and manage the `ADMIN`, `SALE`, and `CUSTOMER` role assignments. |
+| Properties | Create, edit, activate/deactivate properties, and manage property media. |
+| Bookings | View all bookings, filter by status, open booking details, and inspect audit history. |
+
+Design principles: keep the customer booking flow short, make every state and action explicit, protect role-specific screens with authentication and authorization, preserve navigation context, support desktop/mobile layouts, and provide consistent loading, empty, success, and error states.
 
 ## 🧰 Technology Stack
 
