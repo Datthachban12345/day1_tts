@@ -144,65 +144,6 @@ The use-case model below follows `docs/use_case.png` and defines the system boun
 | **Sales Staff** | Login, view assigned bookings, view booking details, confirm booking, reject booking, provide rejection reason, complete booking, manage availability, view notifications |
 | **Admin** | Login, manage users, manage roles, manage properties, manage property media, manage bookings, view notifications |
 
-```mermaid
-flowchart LR
-    Customer[Customer]
-    Sales[Sales Staff]
-    Admin[Admin]
-
-    subgraph System[Home Viewing Booking System]
-        Register((Register))
-        Login((Login))
-        Search((Search Properties))
-        PropertyDetails((View Property Details))
-        CreateBooking((Create Booking))
-        CheckAvailability((Check Availability))
-        MyBookings((View My Bookings))
-        BookingDetails((View Booking Details))
-        CancelBooking((Cancel Booking))
-        ViewNotifications((View Notifications))
-        AssignedBookings((View Assigned Bookings))
-        ConfirmBooking((Confirm Booking))
-        RejectBooking((Reject Booking))
-        RejectionReason((Provide Rejection Reason))
-        CompleteBooking((Complete Booking))
-        ManageAvailability((Manage Availability))
-        ManageUsers((Manage Users))
-        ManageRoles((Manage Roles))
-        ManageProperties((Manage Properties))
-        ManageMedia((Manage Property Media))
-        ManageBookings((Manage Bookings))
-    end
-
-    Customer --> Register
-    Customer --> Login
-    Customer --> Search
-    Customer --> PropertyDetails
-    Customer --> CreateBooking
-    Customer --> MyBookings
-    Customer --> BookingDetails
-    Customer --> CancelBooking
-    Customer --> ViewNotifications
-    Sales --> Login
-    Sales --> AssignedBookings
-    Sales --> BookingDetails
-    Sales --> ConfirmBooking
-    Sales --> RejectBooking
-    Sales --> CompleteBooking
-    Sales --> ManageAvailability
-    Sales --> ViewNotifications
-    Admin --> Login
-    Admin --> ManageUsers
-    Admin --> ManageRoles
-    Admin --> ManageProperties
-    Admin --> ManageBookings
-    Admin --> ViewNotifications
-
-    CreateBooking -.->|include| CheckAvailability
-    RejectBooking -.->|include| RejectionReason
-    ManageProperties -.->|include| ManageMedia
-```
-
 ## 🔄 Activity Diagram
 
 The booking activity must follow this order: authenticate customer → search property → view details → choose an available slot → validate availability and conflicts → create a pending booking → notify sales → sales confirms or rejects → update status and notify customer.
