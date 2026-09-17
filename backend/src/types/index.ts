@@ -7,8 +7,8 @@ export type PropertyType = "APARTMENT" | "HOUSE" | "VILLA" | "TOWNHOUSE";
 export type PropertyStatus = "AVAILABLE" | "SOLD" | "RENTED" | "INACTIVE";
 
 export interface User {
-  id: number;
-  role_id: number;
+  id: string;
+  role_id: string;
   role_name?: UserRole;
   email: string;
   password_hash: string;
@@ -20,7 +20,7 @@ export interface User {
 }
 
 export interface UserProfile {
-  id: number;
+  id: string;
   email: string;
   fullName: string;
   phone: string;
@@ -30,7 +30,7 @@ export interface UserProfile {
 }
 
 export interface Property {
-  id: number;
+  id: string;
   title: string;
   description?: string;
   property_type: PropertyType;
@@ -42,24 +42,24 @@ export interface Property {
   district: string;
   city: string;
   status: PropertyStatus;
-  created_by?: number;
-  assigned_sale_id?: number;
+  created_by?: string;
+  assigned_sale_id?: string;
   created_at: Date;
   updated_at: Date;
 }
 
 export interface PropertyMedia {
-  id: number;
-  property_id: number;
-  media_url: string;
+  id: string;
+  property_id: string;
+  url: string;
   media_type: "IMAGE" | "VIDEO";
   is_primary: boolean;
   created_at: Date;
 }
 
 export interface SaleAvailability {
-  id: number;
-  sale_id: number;
+  id: string;
+  sale_id: string;
   day_of_week: number; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
   start_time: string; // HH:mm:ss
   end_time: string;   // HH:mm:ss
@@ -67,10 +67,10 @@ export interface SaleAvailability {
 }
 
 export interface Booking {
-  id: number;
-  customer_id: number;
-  sale_id: number;
-  property_id: number;
+  id: string;
+  customer_id: string;
+  sale_id: string;
+  property_id: string;
   booking_date: string; // YYYY-MM-DD
   start_time: string;   // HH:mm:ss
   end_time: string;     // HH:mm:ss
@@ -87,11 +87,11 @@ export interface Booking {
 }
 
 export interface BookingStatusHistory {
-  id: number;
-  booking_id: number;
+  id: string;
+  booking_id: string;
   old_status: BookingStatus | null;
   new_status: BookingStatus;
-  actor_id: number;
+  actor_id: string;
   actor_name?: string;
   actor_role?: UserRole;
   reason?: string;
@@ -99,8 +99,8 @@ export interface BookingStatusHistory {
 }
 
 export interface Notification {
-  id: number;
-  user_id: number;
+  id: string;
+  user_id: string;
   title: string;
   message: string;
   is_read: boolean;
@@ -108,7 +108,7 @@ export interface Notification {
 }
 
 export interface AuthTokenPayload {
-  userId: number;
+  userId: string;
   role: UserRole;
   email: string;
 }

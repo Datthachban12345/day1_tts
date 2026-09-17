@@ -19,7 +19,7 @@ const createPropertySchema = z.object({
   address: z.string().min(5),
   district: z.string().min(2),
   city: z.string().min(2),
-  assigned_sale_id: z.number().int().optional(),
+  assigned_sale_id: z.string().uuid().optional(),
   mediaUrls: z.array(z.string().url()).optional()
 });
 

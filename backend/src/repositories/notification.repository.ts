@@ -1,4 +1,5 @@
 ﻿import { Pool, PoolConnection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
 import { Notification } from "../types/index.js";
 
@@ -6,23 +7,25 @@ export class NotificationRepository {
   constructor(private db: Pool = pool) {}
 
   async create(
-    data: { userId: number; title: string; message: string },
+    data: { userId: string; title: string; message: string },
     conn?: PoolConnection
-  ): Promise<number> {
+  ): Promise<string> {
+    const id = randomUUID();
     const client = conn || this.db;
     const query = `
-      INSERT INTO notifications (user_id, title, message, is_read, created_at)
-      VALUES (?, ?, ?, 0, NOW())
+      INSERT INTO notifications (id, user_id, title, message, type, is_read, created_at)
+      VALUES (?, ?, ?, ?, 'SYSTEM', 0, NOW())
     `;
     const [result] = await client.query<ResultSetHeader>(query, [
+      id,
       data.userId,
       data.title,
       data.message
     ]);
-    return result.insertId;
+    return id;
   }
 
-  async findByUserId(userId: number): Promise<Notification[]> {
+  async findByUserId(userId: string): Promise<Notification[]> {
     const query = `
       SELECT id, user_id as userId, title, message, is_read as isRead, created_at as createdAt
       FROM notifications
@@ -33,7 +36,7 @@ export class NotificationRepository {
     return rows as Notification[];
   }
 
-  async markAsRead(id: number, userId: number): Promise<boolean> {
+  async markAsRead(id: string, userId: string): Promise<boolean> {
     const [result] = await this.db.query<ResultSetHeader>(
       `UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?`,
       [id, userId]

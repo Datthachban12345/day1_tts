@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationRepository = void 0;
+const node_crypto_1 = require("node:crypto");
 const database_js_1 = require("../config/database.js");
 class NotificationRepository {
     db;
@@ -8,17 +9,19 @@ class NotificationRepository {
         this.db = db;
     }
     async create(data, conn) {
+        const id = (0, node_crypto_1.randomUUID)();
         const client = conn || this.db;
         const query = `
-      INSERT INTO notifications (user_id, title, message, is_read, created_at)
-      VALUES (?, ?, ?, 0, NOW())
+      INSERT INTO notifications (id, user_id, title, message, type, is_read, created_at)
+      VALUES (?, ?, ?, ?, 'SYSTEM', 0, NOW())
     `;
         const [result] = await client.query(query, [
+            id,
             data.userId,
             data.title,
             data.message
         ]);
-        return result.insertId;
+        return id;
     }
     async findByUserId(userId) {
         const query = `

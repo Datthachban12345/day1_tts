@@ -1,4 +1,5 @@
 ﻿import { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
 import { Property, PropertyFilterDTO, PropertyMedia } from "../types/index.js";
 
@@ -47,7 +48,7 @@ export class PropertyRepository {
     const total = countRows[0]?.total || 0;
 
     const dataQuery = `
-      SELECT p.*, pm.media_url as thumbnailUrl
+      SELECT p.*, pm.url as thumbnailUrl
       FROM properties p
       LEFT JOIN property_media pm ON p.id = pm.property_id AND pm.is_primary = 1
       ${whereClause}
@@ -62,7 +63,7 @@ export class PropertyRepository {
     };
   }
 
-  async findById(id: number): Promise<any | null> {
+  async findById(id: string): Promise<any | null> {
     const [propRows] = await this.db.query<RowDataPacket[]>(
       `SELECT p.*, u.full_name as assignedSaleName 
        FROM properties p 
@@ -73,7 +74,7 @@ export class PropertyRepository {
     if (!propRows[0]) return null;
 
     const [mediaRows] = await this.db.query<RowDataPacket[]>(
-      `SELECT id, media_url as mediaUrl, media_type as mediaType, is_primary as isPrimary 
+      `SELECT id, url as mediaUrl, media_type as mediaType, is_primary as isPrimary 
        FROM property_media 
        WHERE property_id = ? 
        ORDER BY is_primary DESC, id ASC`,
@@ -86,12 +87,14 @@ export class PropertyRepository {
     };
   }
 
-  async create(data: Partial<Property>, mediaUrls: string[] = []): Promise<number> {
+  async create(data: Partial<Property>, mediaUrls: string[] = []): Promise<string> {
+    const propertyId = randomUUID();
     const query = `
-      INSERT INTO properties (title, description, property_type, price, area, bedrooms, bathrooms, address, district, city, status, created_by, assigned_sale_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'AVAILABLE', ?, ?, NOW(), NOW())
+      INSERT INTO properties (id, title, description, property_type, price, area, bedrooms, bathrooms, address, district, city, status, created_by, assigned_sale_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'AVAILABLE', ?, ?, NOW(), NOW())
     `;
     const [result] = await this.db.query<ResultSetHeader>(query, [
+      propertyId,
       data.title,
       data.description || null,
       data.property_type,
@@ -105,12 +108,11 @@ export class PropertyRepository {
       data.created_by || null,
       data.assigned_sale_id || null
     ]);
-    const propertyId = result.insertId;
-
     for (let i = 0; i < mediaUrls.length; i++) {
+      const mediaId = randomUUID();
       await this.db.query(
-        `INSERT INTO property_media (property_id, media_url, media_type, is_primary, created_at) VALUES (?, ?, 'IMAGE', ?, NOW())`,
-        [propertyId, mediaUrls[i], i === 0 ? 1 : 0]
+        `INSERT INTO property_media (id, property_id, url, media_type, is_primary, display_order, created_at) VALUES (?, ?, ?, 'IMAGE', ?, ?, NOW())`,
+        [mediaId, propertyId, mediaUrls[i], i === 0 ? 1 : 0, i + 1]
       );
     }
     return propertyId;

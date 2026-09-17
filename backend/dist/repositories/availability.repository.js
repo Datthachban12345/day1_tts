@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AvailabilityRepository = void 0;
+const node_crypto_1 = require("node:crypto");
 const database_js_1 = require("../config/database.js");
 class AvailabilityRepository {
     db;
@@ -38,7 +39,7 @@ class AvailabilityRepository {
     async setAvailability(saleId, slots) {
         await this.db.query(`DELETE FROM sale_availability WHERE sale_id = ?`, [saleId]);
         for (const slot of slots) {
-            await this.db.query(`INSERT INTO sale_availability (sale_id, day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?, 1)`, [saleId, slot.dayOfWeek, slot.startTime, slot.endTime]);
+            await this.db.query(`INSERT INTO sale_availability (id, sale_id, day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?, ?, 1)`, [(0, node_crypto_1.randomUUID)(), saleId, slot.dayOfWeek, slot.startTime, slot.endTime]);
         }
     }
 }

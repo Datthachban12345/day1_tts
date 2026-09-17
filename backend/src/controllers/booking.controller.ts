@@ -62,7 +62,7 @@ export class BookingController {
   async getBookingDetail(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const detail = await bookingService.getBookingDetail(
-        Number(req.params.id),
+        req.params.id,
         req.user!.userId,
         req.user!.role
       );
@@ -78,7 +78,7 @@ export class BookingController {
   async updateBookingStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const updated = await bookingService.updateBookingStatus(
-        Number(req.params.id),
+        req.params.id,
         req.body.status,
         req.user!.userId,
         req.user!.role,

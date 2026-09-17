@@ -177,7 +177,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: Property details
@@ -188,7 +189,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
-  /sales/availability:
+  /sales/availability/my:
     get:
       tags: [Sales Availability]
       summary: Get current sales staff availability schedule
@@ -224,7 +225,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/AvailabilitySlot'
 
-  /sales/{saleId}/availability:
+  /sales/availability/{saleId}:
     get:
       tags: [Sales Availability]
       summary: Get public availability slots of a specific Sales agent (for Customer booking)
@@ -233,7 +234,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: Public availability of the agent
@@ -353,7 +355,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: Detailed booking and status history
@@ -375,7 +378,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -425,7 +429,8 @@ paths:
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
       responses:
         '200':
           description: Notification marked as read
@@ -479,7 +484,8 @@ paths:
           in: path
           required: true
           schema: 
-            type: integer
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -540,16 +546,24 @@ components:
     AuthResponse:
       type: object
       properties:
-        accessToken:
+        success:
+          type: boolean
+        message:
           type: string
-        user:
-          $ref: '#/components/schemas/UserProfile'
+        data:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            user:
+              $ref: '#/components/schemas/UserProfile'
 
     UserProfile:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         email:
           type: string
         fullName:
@@ -569,7 +583,8 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         title:
           type: string
         propertyType:
@@ -603,7 +618,8 @@ components:
             description:
               type: string
             assignedSaleId:
-              type: integer
+              type: string
+              format: uuid
             media:
               type: array
               items:
@@ -613,7 +629,8 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         mediaUrl:
           type: string
         mediaType:
@@ -675,9 +692,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         saleId:
-          type: integer
+          type: string
+          format: uuid
         dayOfWeek:
           type: integer
           description: 0 = Sunday, 1 = Monday, ..., 6 = Saturday
@@ -710,9 +729,11 @@ components:
       required: [propertyId, bookingDate, startTime, endTime]
       properties:
         propertyId:
-          type: integer
+          type: string
+          format: uuid
         saleId:
-          type: integer
+          type: string
+          format: uuid
         bookingDate:
           type: string
           format: date
@@ -731,19 +752,23 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         customerId:
-          type: integer
+          type: string
+          format: uuid
         customerName:
           type: string
         customerPhone:
           type: string
         propertyId:
-          type: integer
+          type: string
+          format: uuid
         propertyTitle:
           type: string
         saleId:
-          type: integer
+          type: string
+          format: uuid
         saleName:
           type: string
         bookingDate:
@@ -776,13 +801,15 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         oldStatus:
           type: string
         newStatus:
           type: string
         actorId:
-          type: integer
+          type: string
+          format: uuid
         actorName:
           type: string
         actorRole:
@@ -808,9 +835,11 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
         userId:
-          type: integer
+          type: string
+          format: uuid
         title:
           type: string
         message:

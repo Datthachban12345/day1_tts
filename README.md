@@ -16,23 +16,15 @@ A web-based system that helps customers search for properties, schedule home vie
 - [Problem and Objective](#-problem-and-objective)
 - [Features by Role](#-features-by-role)
 - [MVP Scope](#-mvp-scope)
-- [System Workflow](#-system-workflow)
+- [Use Cases](#-use-cases)
+- [Class Diagram](#-class-diagram)
+- [Activity Diagram](#-activity-diagram)
+- [Sequence Diagram](#-sequence-diagram)
 - [Visual Documentation](#-visual-documentation)
 - [Database Architecture](#-database-architecture)
 - [UI/UX Overview](#-uiux-overview)
 - [Technology Stack](#-technology-stack)
-- [Documentation](#documentation)
 - [Installation](#-installation)
-
-## Documentation
-
-Start here, in order:
-
-| Document | What it answers |
-| --- | --- |
-| [Architecture](docs/architecture-arc42.md) | arc42 + C4 - the main system design document |
-| [OpenAPI Specification](docs/openapi.yaml) | REST API endpoints, request/response schemas, and authentication contracts |
-| [User Stories INVEST](docs/user_stories_invest.md) | Product requirements, user stories, and acceptance criteria |
 
 ## 📌 Overview
 
@@ -87,7 +79,121 @@ stateDiagram-v2
 
 Out of scope for Phase 1: AI agents, automatic sales ranking, route optimization, automatic rescheduling, external calendar synchronization, behavioral analytics, and advanced reviews.
 
-## 🔄 System Workflow
+## 🧩 Use Cases
+
+The system has three primary actors and the following main use cases:
+
+| Actor | Use cases |
+| --- | --- |
+| **Customer** | Register, login, search properties, filter properties, view property details, view sales availability, create booking, view booking history, cancel eligible booking, receive notifications |
+| **Sales Staff** | Login, manage availability, view assigned bookings, view customer details, confirm booking, reject booking, complete viewing, add booking notes, receive notifications |
+| **Admin** | Login, manage users, manage roles and account status, create and manage properties, manage property media, view all bookings, inspect booking history |
+
+### Use-case relationships
+
+```mermaid
+flowchart LR
+    Customer[Customer]
+    Sales[Sales Staff]
+    Admin[Admin]
+
+    subgraph System[Home Viewing Booking System]
+        Auth((Register / Login))
+        Search((Search and Filter Properties))
+        Details((View Property Details))
+        Availability((Manage Availability))
+        CreateBooking((Create Booking))
+        ManageBooking((Process Booking))
+        TrackBooking((Track Booking History))
+        ManageUsers((Manage Users and Roles))
+        ManageProperties((Manage Properties and Media))
+        Notifications((Receive Notifications))
+    end
+
+    Customer --> Auth
+    Customer --> Search
+    Customer --> Details
+    Customer --> CreateBooking
+    Customer --> TrackBooking
+    Customer --> Notifications
+    Sales --> Auth
+    Sales --> Availability
+    Sales --> ManageBooking
+    Sales --> Notifications
+    Admin --> Auth
+    Admin --> ManageUsers
+    Admin --> ManageProperties
+    Admin --> ManageBooking
+```
+
+## 🧱 Class Diagram
+
+The API follows the three-tier dependency direction:
+
+```mermaid
+classDiagram
+    class AuthController
+    class PropertyController
+    class BookingController
+    class AvailabilityController
+    class NotificationController
+
+    class AuthService
+    class PropertyService
+    class BookingService
+    class AvailabilityService
+    class NotificationService
+
+    class UserRepository
+    class PropertyRepository
+    class BookingRepository
+    class AvailabilityRepository
+    class NotificationRepository
+
+    AuthController --> AuthService
+    PropertyController --> PropertyService
+    BookingController --> BookingService
+    AvailabilityController --> AvailabilityService
+    NotificationController --> NotificationService
+
+    AuthService --> UserRepository
+    PropertyService --> PropertyRepository
+    BookingService --> BookingRepository
+    BookingService --> AvailabilityRepository
+    BookingService --> NotificationRepository
+    AvailabilityService --> AvailabilityRepository
+    NotificationService --> NotificationRepository
+```
+
+## 🔄 Activity Diagram
+
+The booking activity must follow this order: authenticate customer → search property → view details → choose an available slot → validate availability and conflicts → create a pending booking → notify sales → sales confirms or rejects → update status and notify customer.
+
+```mermaid
+flowchart TD
+    Start([Start]) --> Login{Customer authenticated?}
+    Login -- No --> Authenticate[Register or Login]
+    Authenticate --> Search[Search and filter properties]
+    Login -- Yes --> Search
+    Search --> Details[View property details]
+    Details --> Select[Select date, time slot, and note]
+    Select --> Available{Slot available and no conflict?}
+    Available -- No --> Select
+    Available -- Yes --> Create[Create booking as PENDING]
+    Create --> NotifySales[Notify Sales Staff]
+    NotifySales --> Decision{Sales decision}
+    Decision -- Reject --> Rejected[Set REJECTED and notify customer]
+    Decision -- Confirm --> Confirmed[Set CONFIRMED and notify customer]
+    Confirmed --> Viewing[Conduct property viewing]
+    Viewing --> Complete[Set COMPLETED]
+    Select --> Cancel[Customer cancels eligible booking]
+    Cancel --> Cancelled[Set CANCELLED and notify Sales]
+    Rejected --> End([End])
+    Complete --> End
+    Cancelled --> End
+```
+
+## 🔁 Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -123,6 +229,10 @@ The mindmap describes the product scope, feature groups, MVP entities, key relat
 ![Booking workflow by role](docs/Screenshot%202026-09-12%20022553.png)
 
 ![Use-case diagram](docs/Screenshot%202026-09-12%20022621.png)
+
+![Use-case diagram source](docs/use_case.png)
+
+![C4 component diagram](docs/c4_component_diagram_final_1789360986705.jpg)
 
 
 ### Design files and source documents
@@ -212,7 +322,17 @@ Design principles: keep the `Search → Property → Book` flow short, make stat
 - pnpm 8+ or npm 9+
 - MySQL 8.0+ / MariaDB when connecting to the backend
 
-### Run the frontend prototype
+### Run the backend API
+
+```bash
+cd backend
+pnpm install
+pnpm dev
+```
+
+The API runs at `http://localhost:5000`; check `http://localhost:5000/api/health`.
+
+### Run the frontend
 
 ```bash
 cd frontend
@@ -225,12 +345,14 @@ Open the Vite URL shown in the terminal, usually `http://localhost:5173`.
 ### Build and initialize the database
 
 ```bash
-cd frontend
+cd backend
 pnpm build
+
+cd ..
 mysql -u <username> -p <database_name> < database/booking.sql
 ```
 
-The sample schema is available at [`database/booking.sql`](database/booking.sql). The backend/API is not included in the current repository structure; add the related environment variables and run commands here when it is introduced.
+The sample schema is available at [`database/booking.sql`](database/booking.sql). Configure the backend database connection through environment variables before starting the API.
 
 ## 🛣️ Roadmap
 

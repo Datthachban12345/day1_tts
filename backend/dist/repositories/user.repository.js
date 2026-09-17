@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
+const node_crypto_1 = require("node:crypto");
 const database_js_1 = require("../config/database.js");
 class UserRepository {
     db;
@@ -45,22 +46,24 @@ class UserRepository {
         return rows;
     }
     async getRoleIdByName(roleName) {
-        const [rows] = await this.db.query(`SELECT id FROM roles WHERE name = ? LIMIT 1`, [roleName]);
+        const [rows] = await this.db.query(`SELECT id FROM roles WHERE code = ? LIMIT 1`, [roleName]);
         return rows[0] ? rows[0].id : null;
     }
     async create(data) {
+        const id = (0, node_crypto_1.randomUUID)();
         const query = `
-      INSERT INTO users (email, password_hash, full_name, phone, role_id, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())
+      INSERT INTO users (id, email, password_hash, full_name, phone, role_id, is_active, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())
     `;
         const [result] = await this.db.query(query, [
+            id,
             data.email,
             data.passwordHash,
             data.fullName,
             data.phone,
             data.roleId
         ]);
-        return result.insertId;
+        return id;
     }
     async updateActiveStatus(id, isActive) {
         const [result] = await this.db.query(`UPDATE users SET is_active = ?, updated_at = NOW() WHERE id = ?`, [isActive ? 1 : 0, id]);

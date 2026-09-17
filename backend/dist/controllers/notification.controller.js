@@ -18,7 +18,7 @@ class NotificationController {
     }
     async markAsRead(req, res, next) {
         try {
-            await notificationService.markAsRead(Number(req.params.id), req.user.userId);
+            await notificationService.markAsRead(req.params.id, req.user.userId);
             res.status(200).json({
                 success: true,
                 message: "Đã đánh dấu thông báo là đã đọc."

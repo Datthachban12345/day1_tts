@@ -49,9 +49,9 @@ export class BookingService {
    * Core Booking Creation with Transaction & Validations
    */
   async createBooking(data: {
-    customerId: number;
-    propertyId: number;
-    saleId?: number;
+    customerId: string;
+    propertyId: string;
+    saleId?: string;
     bookingDate: string; // YYYY-MM-DD
     startTime: string;   // HH:mm:ss
     endTime: string;     // HH:mm:ss
@@ -78,7 +78,7 @@ export class BookingService {
     if (isNaN(bookingDateObj.getTime())) {
       throw new Error("INVALID_BOOKING_DATE");
     }
-    const dayOfWeek = bookingDateObj.getDay();
+    const dayOfWeek = bookingDateObj.getDay() === 0 ? 7 : bookingDateObj.getDay();
 
     const isSlotAvailable = await this.availabilityRepo.checkSlotAvailable(
       assignedSaleId,
@@ -137,11 +137,11 @@ export class BookingService {
     return newBooking;
   }
 
-  async getCustomerBookings(customerId: number, status?: string) {
+  async getCustomerBookings(customerId: string, status?: string) {
     return this.bookingRepo.findByCustomer(customerId, status);
   }
 
-  async getSaleBookings(saleId: number, status?: string) {
+  async getSaleBookings(saleId: string, status?: string) {
     return this.bookingRepo.findBySale(saleId, status);
   }
 
@@ -152,7 +152,7 @@ export class BookingService {
   /**
    * Get booking details and audit trail status history
    */
-  async getBookingDetail(bookingId: number, userId: number, role: UserRole) {
+  async getBookingDetail(bookingId: string, userId: string, role: UserRole) {
     const booking = await this.bookingRepo.findById(bookingId);
     if (!booking) {
       throw new Error("BOOKING_NOT_FOUND");
@@ -177,9 +177,9 @@ export class BookingService {
    * Update status with State Machine Transition check
    */
   async updateBookingStatus(
-    bookingId: number,
+    bookingId: string,
     newStatus: BookingStatus,
-    actorId: number,
+    actorId: string,
     actorRole: UserRole,
     reason?: string
   ) {

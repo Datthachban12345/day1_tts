@@ -11,7 +11,7 @@ exports.availabilityRoutes = (0, express_1.Router)();
 const availabilityController = new availability_controller_js_1.AvailabilityController();
 const setAvailabilitySchema = zod_1.z.object({
     slots: zod_1.z.array(zod_1.z.object({
-        dayOfWeek: zod_1.z.number().int().min(0).max(6),
+        dayOfWeek: zod_1.z.number().int().min(1).max(7),
         startTime: zod_1.z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),
         endTime: zod_1.z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss")
     }))

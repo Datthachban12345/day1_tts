@@ -31,7 +31,7 @@ class AvailabilityController {
     }
     async getSaleAvailabilityPublic(req, res, next) {
         try {
-            const slots = await availabilityService.getAvailabilityBySaleId(Number(req.params.saleId));
+            const slots = await availabilityService.getAvailabilityBySaleId(req.params.saleId);
             res.status(200).json({
                 success: true,
                 data: slots

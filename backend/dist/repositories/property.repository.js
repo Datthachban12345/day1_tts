@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PropertyRepository = void 0;
+const node_crypto_1 = require("node:crypto");
 const database_js_1 = require("../config/database.js");
 class PropertyRepository {
     db;
@@ -45,7 +46,7 @@ class PropertyRepository {
         const [countRows] = await this.db.query(countQuery, params);
         const total = countRows[0]?.total || 0;
         const dataQuery = `
-      SELECT p.*, pm.media_url as thumbnailUrl
+      SELECT p.*, pm.url as thumbnailUrl
       FROM properties p
       LEFT JOIN property_media pm ON p.id = pm.property_id AND pm.is_primary = 1
       ${whereClause}
@@ -65,7 +66,7 @@ class PropertyRepository {
        WHERE p.id = ? LIMIT 1`, [id]);
         if (!propRows[0])
             return null;
-        const [mediaRows] = await this.db.query(`SELECT id, media_url as mediaUrl, media_type as mediaType, is_primary as isPrimary 
+        const [mediaRows] = await this.db.query(`SELECT id, url as mediaUrl, media_type as mediaType, is_primary as isPrimary 
        FROM property_media 
        WHERE property_id = ? 
        ORDER BY is_primary DESC, id ASC`, [id]);
@@ -75,11 +76,13 @@ class PropertyRepository {
         };
     }
     async create(data, mediaUrls = []) {
+        const propertyId = (0, node_crypto_1.randomUUID)();
         const query = `
-      INSERT INTO properties (title, description, property_type, price, area, bedrooms, bathrooms, address, district, city, status, created_by, assigned_sale_id, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'AVAILABLE', ?, ?, NOW(), NOW())
+      INSERT INTO properties (id, title, description, property_type, price, area, bedrooms, bathrooms, address, district, city, status, created_by, assigned_sale_id, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'AVAILABLE', ?, ?, NOW(), NOW())
     `;
         const [result] = await this.db.query(query, [
+            propertyId,
             data.title,
             data.description || null,
             data.property_type,
@@ -93,9 +96,9 @@ class PropertyRepository {
             data.created_by || null,
             data.assigned_sale_id || null
         ]);
-        const propertyId = result.insertId;
         for (let i = 0; i < mediaUrls.length; i++) {
-            await this.db.query(`INSERT INTO property_media (property_id, media_url, media_type, is_primary, created_at) VALUES (?, ?, 'IMAGE', ?, NOW())`, [propertyId, mediaUrls[i], i === 0 ? 1 : 0]);
+            const mediaId = (0, node_crypto_1.randomUUID)();
+            await this.db.query(`INSERT INTO property_media (id, property_id, url, media_type, is_primary, display_order, created_at) VALUES (?, ?, ?, 'IMAGE', ?, ?, NOW())`, [mediaId, propertyId, mediaUrls[i], i === 0 ? 1 : 0, i + 1]);
         }
         return propertyId;
     }

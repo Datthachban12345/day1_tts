@@ -36,7 +36,7 @@ export class PropertyController {
 
   async getPropertyById(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const property = await propertyService.getPropertyById(Number(req.params.id));
+      const property = await propertyService.getPropertyById(req.params.id);
       res.status(200).json({
         success: true,
         data: property

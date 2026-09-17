@@ -42,6 +42,7 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(150) NOT NULL,
+    phone VARCHAR(20),
     avatar_url VARCHAR(512),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -92,9 +93,11 @@ CREATE TABLE properties (
     bathrooms INT NOT NULL DEFAULT 0 CHECK (bathrooms >= 0),
     status ENUM('AVAILABLE', 'RENTED', 'SOLD', 'UNAVAILABLE') NOT NULL DEFAULT 'AVAILABLE',
     created_by VARCHAR(36),
+    assigned_sale_id VARCHAR(36),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_properties_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    CONSTRAINT fk_properties_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_properties_assigned_sale FOREIGN KEY (assigned_sale_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Thông tin căn nhà/bất động sản';
 
 -- Table: property_media
@@ -203,12 +206,12 @@ INSERT INTO roles (id, code, name, description) VALUES
 ('10000000-0000-0000-0000-000000000003', 'CUSTOMER', 'Customer', 'Khách hàng tìm nhà xem');
 
 -- Insert Users
-INSERT INTO users (id, role_id, email, password_hash, full_name, is_active) VALUES
-('a0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'admin@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Lê Tiến Đạt (Admin)', TRUE),
-('s0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 'sale.nam@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Nguyễn Văn Nam', TRUE),
-('s0000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'sale.huong@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Trần Thị Hương', TRUE),
-('c0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'customer.minh@gmail.com', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Phạm Quang Minh', TRUE),
-('c0000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003', 'customer.lan@gmail.com', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Hoàng Ngọc Lan', TRUE);
+INSERT INTO users (id, role_id, email, password_hash, full_name, phone, is_active) VALUES
+('a0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'admin@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Lê Tiến Đạt (Admin)', '0900000000', TRUE),
+('s0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 'sale.nam@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Nguyễn Văn Nam', '0912345678', TRUE),
+('s0000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'sale.huong@homebooking.vn', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Trần Thị Hương', '0987654321', TRUE),
+('c0000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', 'customer.minh@gmail.com', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Phạm Quang Minh', '0901112223', TRUE),
+('c0000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000003', 'customer.lan@gmail.com', '$2a$12$eImiTXuWVxfM37uY4JANjO5M3q9J.W8W', 'Hoàng Ngọc Lan', '0904445556', TRUE);
 
 -- Insert Profiles
 INSERT INTO sale_profiles (id, user_id, employee_code, phone_number, assigned_area, rating_avg) VALUES
@@ -220,10 +223,10 @@ INSERT INTO customer_profiles (id, user_id, phone_number, address, preferred_dis
 (UUID(), 'c0000000-0000-0000-0000-000000000002', '0904445556', 'Số 45 Nguyễn Trãi, Thanh Xuân, Hà Nội', 'Thanh Xuân', 2000000000, 3500000000);
 
 -- Insert Properties
-INSERT INTO properties (id, title, description, property_type, address, district, city, price, area, bedrooms, bathrooms, status, created_by) VALUES
-('p0000000-0000-0000-0000-000000000001', 'Căn hộ 2PN Vinhomes D\'Capitale Trần Duy Hưng', 'Căn hộ tầng trung, ban công Đông Nam thoáng mát, đầy đủ nội thất cao cấp.', 'Apartment', '119 Trần Duy Hưng', 'Cầu Giấy', 'Hà Nội', 4200000000, 72.50, 2, 2, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001'),
-('p0000000-0000-0000-0000-000000000002', 'Nhà riêng 4 tầng ngõ ô tô tránh Hoàng Ngân', 'Nhà mới xây 4 tầng, mặt tiền 4.5m, dân trí cao, gần trường học và chợ.', 'House', 'Ngõ 124 Hoàng Ngân', 'Cầu Giấy', 'Hà Nội', 6800000000, 55.00, 4, 3, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001'),
-('p0000000-0000-0000-0000-000000000003', 'Chung cư Royal City 3PN full nội thất', 'Căn hộ góc 3 phòng ngủ thoáng, đầy đủ tiện ích bể bơi, gym, trung tâm thương mại.', 'Apartment', '72A Nguyễn Trãi', 'Thanh Xuân', 'Hà Nội', 5500000000, 110.00, 3, 2, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001');
+INSERT INTO properties (id, title, description, property_type, address, district, city, price, area, bedrooms, bathrooms, status, created_by, assigned_sale_id) VALUES
+('p0000000-0000-0000-0000-000000000001', 'Căn hộ 2PN Vinhomes D\'Capitale Trần Duy Hưng', 'Căn hộ tầng trung, ban công Đông Nam thoáng mát, đầy đủ nội thất cao cấp.', 'APARTMENT', '119 Trần Duy Hưng', 'Cầu Giấy', 'Hà Nội', 4200000000, 72.50, 2, 2, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001', 's0000000-0000-0000-0000-000000000001'),
+('p0000000-0000-0000-0000-000000000002', 'Nhà riêng 4 tầng ngõ ô tô tránh Hoàng Ngân', 'Nhà mới xây 4 tầng, mặt tiền 4.5m, dân trí cao, gần trường học và chợ.', 'HOUSE', 'Ngõ 124 Hoàng Ngân', 'Cầu Giấy', 'Hà Nội', 6800000000, 55.00, 4, 3, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001', 's0000000-0000-0000-0000-000000000001'),
+('p0000000-0000-0000-0000-000000000003', 'Chung cư Royal City 3PN full nội thất', 'Căn hộ góc 3 phòng ngủ thoáng, đầy đủ tiện ích bể bơi, gym, trung tâm thương mại.', 'APARTMENT', '72A Nguyễn Trãi', 'Thanh Xuân', 'Hà Nội', 5500000000, 110.00, 3, 2, 'AVAILABLE', 'a0000000-0000-0000-0000-000000000001', 's0000000-0000-0000-0000-000000000002');
 
 -- Insert Property Media
 INSERT INTO property_media (id, property_id, media_type, url, is_primary, display_order) VALUES

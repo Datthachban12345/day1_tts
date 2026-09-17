@@ -3,12 +3,12 @@
 export class AvailabilityService {
   constructor(private availabilityRepo: AvailabilityRepository = new AvailabilityRepository()) {}
 
-  async getAvailabilityBySaleId(saleId: number) {
+  async getAvailabilityBySaleId(saleId: string) {
     return this.availabilityRepo.findBySaleId(saleId);
   }
 
   async setAvailability(
-    saleId: number,
+    saleId: string,
     slots: { dayOfWeek: number; startTime: string; endTime: string }[]
   ) {
     for (const slot of slots) {

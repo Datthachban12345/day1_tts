@@ -10,8 +10,8 @@ const validate_middleware_js_1 = require("../middlewares/validate.middleware.js"
 exports.bookingRoutes = (0, express_1.Router)();
 const bookingController = new booking_controller_js_1.BookingController();
 const createBookingSchema = zod_1.z.object({
-    propertyId: zod_1.z.number().int().positive(),
-    saleId: zod_1.z.number().int().positive().optional(),
+    propertyId: zod_1.z.string().uuid(),
+    saleId: zod_1.z.string().uuid().optional(),
     bookingDate: zod_1.z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng YYYY-MM-DD"),
     startTime: zod_1.z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),
     endTime: zod_1.z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),

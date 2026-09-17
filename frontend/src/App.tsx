@@ -7,8 +7,9 @@ import { MyBookingsTab } from "./components/MyBookingsTab.js";
 import { SalesDashboardTab } from "./components/SalesDashboardTab.js";
 import { AdminTab } from "./components/AdminTab.js";
 import { Footer } from "./components/Footer.js";
-import { MOCK_PROPERTIES, INITIAL_BOOKINGS } from "./data/mockProperties.js";
 import { Property, Booking, UserRole } from "./types/index.js";
+import { getProperties } from "./services/property.service.js";
+import { createBooking, getAdminBookings, getCustomerBookings, getSaleBookings, updateBookingStatus } from "./services/booking.service.js";
 
 const getRoleFromPath = (): UserRole => {
   if (window.location.pathname === "/sale") return "SALE";
@@ -43,8 +44,26 @@ export default function App() {
     return () => window.removeEventListener("popstate", handleRouteChange);
   }, []);
 
-  const [properties, setProperties] = useState<Property[]>(MOCK_PROPERTIES);
-  const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const params = new URLSearchParams({ city: "Hà Nội", page: "1", limit: "50" });
+        const [loadedProperties, loadedBookings] = await Promise.all([
+          getProperties(params),
+          currentRole === "SALE" ? getSaleBookings() : currentRole === "ADMIN" ? getAdminBookings() : getCustomerBookings()
+        ]);
+        setProperties(loadedProperties);
+        setBookings(loadedBookings);
+      } catch (error) {
+        setLoadError(error instanceof Error ? error.message : "Không thể tải dữ liệu từ API.");
+      }
+    };
+    void loadData();
+  }, [currentRole]);
 
   // Search and Filter States
   const [searchTerm, setSearchTerm] = useState("");
@@ -94,12 +113,6 @@ export default function App() {
   }, [properties, searchTerm, selectedDistrict, selectedType, selectedPriceRange]);
 
   const visibleBookings = useMemo(() => {
-    if (currentRole === "CUSTOMER") {
-      return bookings.filter((booking) => booking.customerId === 1);
-    }
-    if (currentRole === "SALE") {
-      return bookings.filter((booking) => booking.saleId === 101);
-    }
     return bookings;
   }, [bookings, currentRole]);
 
@@ -115,8 +128,7 @@ export default function App() {
     setSelectedBedrooms("ALL");
   };
 
-  // Booking Actions (ACID Transaction simulation on State)
-  const handleCreateBooking = (data: {
+  const handleCreateBooking = async (data: {
     property: Property;
     bookingDate: string;
     timeSlot: string;
@@ -124,149 +136,36 @@ export default function App() {
     customerPhone: string;
     customerNote: string;
   }) => {
-    const newId = bookings.length + 1;
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    const newBooking: Booking = {
-      id: newId,
-      bookingCode: `BK-${8900 + newId}`,
+    const [startTime, endTime] = data.timeSlot.split(" - ");
+    const booking = await createBooking({
       propertyId: data.property.id,
-      propertyTitle: data.property.title,
-      propertyAddress: `${data.property.address}, ${data.property.district}`,
-      propertyImage: data.property.images[0],
-      propertyPrice: data.property.priceText,
-      customerId: 1,
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      saleId: data.property.assignedSale.id,
-      saleName: data.property.assignedSale.name,
-      salePhone: data.property.assignedSale.phone,
+      saleId: data.property.assignedSale.id || undefined,
       bookingDate: data.bookingDate,
-      timeSlot: data.timeSlot,
-      status: "PENDING",
-      customerNote: data.customerNote,
-      createdAt: nowStr,
-      history: [
-        {
-          id: Date.now(),
-          oldStatus: null,
-          newStatus: "PENDING",
-          actorRole: "CUSTOMER",
-          actorName: data.customerName,
-          reason: "Khách hàng tạo lịch xem nhà mới",
-          timestamp: nowStr
-        }
-      ]
-    };
-
-    setBookings([newBooking, ...bookings]);
+      startTime: `${startTime}:00`,
+      endTime: `${endTime}:00`,
+      customerNote: data.customerNote
+    });
+    setBookings((current) => [booking, ...current]);
   };
 
-  const handleCancelBooking = (bookingId: number, reason: string) => {
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    setBookings(
-      bookings.map((b) => {
-        if (b.id === bookingId) {
-          return {
-            ...b,
-            status: "CANCELLED",
-            history: [
-              ...b.history,
-              {
-                id: Date.now(),
-                oldStatus: b.status,
-                newStatus: "CANCELLED",
-                actorRole: currentRole,
-                actorName: currentRole === "CUSTOMER" ? "Nguyễn Văn Khách" : "Admin System",
-                reason,
-                timestamp: nowStr
-              }
-            ]
-          };
-        }
-        return b;
-      })
-    );
+  const handleCancelBooking = async (bookingId: string, reason: string) => {
+    const booking = await updateBookingStatus(bookingId, "CANCELLED", reason);
+    setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
 
-  const handleConfirmBooking = (bookingId: number) => {
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    setBookings(
-      bookings.map((b) => {
-        if (b.id === bookingId) {
-          return {
-            ...b,
-            status: "CONFIRMED",
-            history: [
-              ...b.history,
-              {
-                id: Date.now(),
-                oldStatus: b.status,
-                newStatus: "CONFIRMED",
-                actorRole: "SALE",
-                actorName: b.saleName,
-                reason: "Sales xác nhận tiếp đón đúng giờ hẹn",
-                timestamp: nowStr
-              }
-            ]
-          };
-        }
-        return b;
-      })
-    );
+  const handleConfirmBooking = async (bookingId: string) => {
+    const booking = await updateBookingStatus(bookingId, "CONFIRMED");
+    setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
 
-  const handleRejectBooking = (bookingId: number, reason: string) => {
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    setBookings(
-      bookings.map((b) => {
-        if (b.id === bookingId) {
-          return {
-            ...b,
-            status: "REJECTED",
-            history: [
-              ...b.history,
-              {
-                id: Date.now(),
-                oldStatus: b.status,
-                newStatus: "REJECTED",
-                actorRole: "SALE",
-                actorName: b.saleName,
-                reason,
-                timestamp: nowStr
-              }
-            ]
-          };
-        }
-        return b;
-      })
-    );
+  const handleRejectBooking = async (bookingId: string, reason: string) => {
+    const booking = await updateBookingStatus(bookingId, "REJECTED", reason);
+    setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
 
-  const handleCompleteBooking = (bookingId: number) => {
-    const nowStr = new Date().toISOString().replace("T", " ").substring(0, 19);
-    setBookings(
-      bookings.map((b) => {
-        if (b.id === bookingId) {
-          return {
-            ...b,
-            status: "COMPLETED",
-            history: [
-              ...b.history,
-              {
-                id: Date.now(),
-                oldStatus: b.status,
-                newStatus: "COMPLETED",
-                actorRole: "SALE",
-                actorName: b.saleName,
-                reason: "Buổi dẫn khách xem nhà đã hoàn tất tốt đẹp",
-                timestamp: nowStr
-              }
-            ]
-          };
-        }
-        return b;
-      })
-    );
+  const handleCompleteBooking = async (bookingId: string) => {
+    const booking = await updateBookingStatus(bookingId, "COMPLETED");
+    setBookings((current) => current.map((item) => item.id === booking.id ? booking : item));
   };
 
   return (

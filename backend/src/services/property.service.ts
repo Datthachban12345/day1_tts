@@ -8,7 +8,7 @@ export class PropertyService {
     return this.propertyRepo.findAll(filter);
   }
 
-  async getPropertyById(id: number) {
+  async getPropertyById(id: string) {
     const property = await this.propertyRepo.findById(id);
     if (!property) {
       throw new Error("PROPERTY_NOT_FOUND");
@@ -16,7 +16,7 @@ export class PropertyService {
     return property;
   }
 
-  async createProperty(data: any, adminId: number) {
+  async createProperty(data: any, adminId: string) {
     const propertyId = await this.propertyRepo.create(
       {
         ...data,

@@ -41,9 +41,9 @@ const buildDefaultSlots = (): SlotGrid => {
 
 interface SalesDashboardTabProps {
   bookings: Booking[];
-  onConfirmBooking: (bookingId: number) => void;
-  onRejectBooking: (bookingId: number, reason: string) => void;
-  onCompleteBooking: (bookingId: number) => void;
+  onConfirmBooking: (bookingId: string) => void;
+  onRejectBooking: (bookingId: string, reason: string) => void;
+  onCompleteBooking: (bookingId: string) => void;
 }
 
 export const SalesDashboardTab: React.FC<SalesDashboardTabProps> = ({

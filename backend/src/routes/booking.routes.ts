@@ -9,8 +9,8 @@ export const bookingRoutes = Router();
 const bookingController = new BookingController();
 
 const createBookingSchema = z.object({
-  propertyId: z.number().int().positive(),
-  saleId: z.number().int().positive().optional(),
+  propertyId: z.string().uuid(),
+  saleId: z.string().uuid().optional(),
   bookingDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Định dạng YYYY-MM-DD"),
   startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),
   endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),

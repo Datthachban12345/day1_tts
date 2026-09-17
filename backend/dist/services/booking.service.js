@@ -67,7 +67,7 @@ class BookingService {
         if (isNaN(bookingDateObj.getTime())) {
             throw new Error("INVALID_BOOKING_DATE");
         }
-        const dayOfWeek = bookingDateObj.getDay();
+        const dayOfWeek = bookingDateObj.getDay() === 0 ? 7 : bookingDateObj.getDay();
         const isSlotAvailable = await this.availabilityRepo.checkSlotAvailable(assignedSaleId, dayOfWeek, data.startTime, data.endTime);
         if (!isSlotAvailable) {
             throw new Error("SLOT_NOT_AVAILABLE");

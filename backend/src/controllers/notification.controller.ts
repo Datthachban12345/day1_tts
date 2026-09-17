@@ -18,7 +18,7 @@ export class NotificationController {
 
   async markAsRead(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      await notificationService.markAsRead(Number(req.params.id), req.user!.userId);
+      await notificationService.markAsRead(req.params.id, req.user!.userId);
       res.status(200).json({
         success: true,
         message: "Đã đánh dấu thông báo là đã đọc."

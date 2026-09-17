@@ -1,11 +1,12 @@
 ﻿import { Pool, PoolConnection, RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
 import { Booking, BookingStatus, BookingStatusHistory } from "../types/index.js";
 
 export class BookingRepository {
   constructor(private db: Pool = pool) {}
 
-  async findById(id: number, conn?: PoolConnection): Promise<Booking | null> {
+  async findById(id: string, conn?: PoolConnection): Promise<Booking | null> {
     const client = conn || this.db;
     const query = `
       SELECT b.*, 
@@ -24,7 +25,7 @@ export class BookingRepository {
   }
 
   async findConflicts(
-    saleId: number,
+    saleId: string,
     bookingDate: string,
     startTime: string,
     endTime: string,
@@ -55,7 +56,7 @@ export class BookingRepository {
     return rows as Booking[];
   }
 
-  async findByCustomer(customerId: number, status?: string): Promise<Booking[]> {
+  async findByCustomer(customerId: string, status?: string): Promise<Booking[]> {
     let query = `
       SELECT b.*, us.full_name as sale_name, p.title as property_title
       FROM bookings b
@@ -73,7 +74,7 @@ export class BookingRepository {
     return rows as Booking[];
   }
 
-  async findBySale(saleId: number, status?: string): Promise<Booking[]> {
+  async findBySale(saleId: string, status?: string): Promise<Booking[]> {
     let query = `
       SELECT b.*, uc.full_name as customer_name, uc.phone as customer_phone, p.title as property_title
       FROM bookings b
@@ -111,21 +112,23 @@ export class BookingRepository {
 
   async createBookingInTransaction(
     data: {
-      customerId: number;
-      saleId: number;
-      propertyId: number;
+      customerId: string;
+      saleId: string;
+      propertyId: string;
       bookingDate: string;
       startTime: string;
       endTime: string;
       customerNote?: string;
     },
     conn: PoolConnection
-  ): Promise<number> {
+  ): Promise<string> {
+    const bookingId = randomUUID();
     const query = `
-      INSERT INTO bookings (customer_id, sale_id, property_id, booking_date, start_time, end_time, status, customer_note, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, NOW(), NOW())
+      INSERT INTO bookings (id, customer_id, sale_id, property_id, booking_date, start_time, end_time, status, customer_note, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, NOW(), NOW())
     `;
     const [result] = await conn.query<ResultSetHeader>(query, [
+      bookingId,
       data.customerId,
       data.saleId,
       data.propertyId,
@@ -134,23 +137,21 @@ export class BookingRepository {
       data.endTime,
       data.customerNote || null
     ]);
-    const bookingId = result.insertId;
-
     // Insert initial status history
     await conn.query(
-      `INSERT INTO booking_status_history (booking_id, old_status, new_status, actor_id, reason, created_at)
-       VALUES (?, NULL, 'PENDING', ?, 'Khách hàng tạo lịch xem nhà mới', NOW())`,
-      [bookingId, data.customerId]
+      `INSERT INTO booking_status_history (id, booking_id, previous_status, new_status, changed_by, reason, created_at)
+        VALUES (?, ?, NULL, 'PENDING', ?, 'Khách hàng tạo lịch xem nhà mới', NOW())`,
+      [randomUUID(), bookingId, data.customerId]
     );
 
     return bookingId;
   }
 
   async updateStatusInTransaction(
-    bookingId: number,
+    bookingId: string,
     oldStatus: BookingStatus,
     newStatus: BookingStatus,
-    actorId: number,
+    actorId: string,
     reason: string | undefined,
     conn: PoolConnection
   ): Promise<void> {
@@ -160,18 +161,18 @@ export class BookingRepository {
     );
 
     await conn.query(
-      `INSERT INTO booking_status_history (booking_id, old_status, new_status, actor_id, reason, created_at)
+      `INSERT INTO booking_status_history (id, booking_id, previous_status, new_status, changed_by, reason, created_at)
        VALUES (?, ?, ?, ?, ?, NOW())`,
-      [bookingId, oldStatus, newStatus, actorId, reason || null]
+      [randomUUID(), bookingId, oldStatus, newStatus, actorId, reason || null]
     );
   }
 
-  async getStatusHistory(bookingId: number): Promise<BookingStatusHistory[]> {
+  async getStatusHistory(bookingId: string): Promise<BookingStatusHistory[]> {
     const query = `
-      SELECT h.id, h.booking_id, h.old_status, h.new_status, h.actor_id, 
+      SELECT h.id, h.booking_id, h.previous_status as old_status, h.new_status, h.changed_by as actor_id, 
              u.full_name as actor_name, r.name as actor_role, h.reason, h.created_at
       FROM booking_status_history h
-      LEFT JOIN users u ON h.actor_id = u.id
+      LEFT JOIN users u ON h.changed_by = u.id
       LEFT JOIN roles r ON u.role_id = r.id
       WHERE h.booking_id = ?
       ORDER BY h.created_at ASC

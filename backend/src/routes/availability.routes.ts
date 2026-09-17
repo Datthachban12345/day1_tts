@@ -11,7 +11,7 @@ const availabilityController = new AvailabilityController();
 const setAvailabilitySchema = z.object({
   slots: z.array(
     z.object({
-      dayOfWeek: z.number().int().min(0).max(6),
+      dayOfWeek: z.number().int().min(1).max(7),
       startTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss"),
       endTime: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/, "Định dạng HH:mm:ss")
     })

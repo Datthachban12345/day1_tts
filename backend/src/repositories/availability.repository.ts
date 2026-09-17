@@ -1,11 +1,12 @@
 ﻿import { Pool, RowDataPacket, ResultSetHeader } from "mysql2/promise";
+import { randomUUID } from "node:crypto";
 import { pool } from "../config/database.js";
 import { SaleAvailability } from "../types/index.js";
 
 export class AvailabilityRepository {
   constructor(private db: Pool = pool) {}
 
-  async findBySaleId(saleId: number): Promise<SaleAvailability[]> {
+  async findBySaleId(saleId: string): Promise<SaleAvailability[]> {
     const query = `
       SELECT id, sale_id as saleId, day_of_week as dayOfWeek, start_time as startTime, end_time as endTime, is_active as isActive
       FROM sale_availability
@@ -17,7 +18,7 @@ export class AvailabilityRepository {
   }
 
   async checkSlotAvailable(
-    saleId: number,
+    saleId: string,
     dayOfWeek: number,
     startTime: string,
     endTime: string
@@ -41,14 +42,14 @@ export class AvailabilityRepository {
   }
 
   async setAvailability(
-    saleId: number,
+    saleId: string,
     slots: { dayOfWeek: number; startTime: string; endTime: string }[]
   ): Promise<void> {
     await this.db.query(`DELETE FROM sale_availability WHERE sale_id = ?`, [saleId]);
     for (const slot of slots) {
       await this.db.query(
-        `INSERT INTO sale_availability (sale_id, day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?, 1)`,
-        [saleId, slot.dayOfWeek, slot.startTime, slot.endTime]
+        `INSERT INTO sale_availability (id, sale_id, day_of_week, start_time, end_time, is_active) VALUES (?, ?, ?, ?, ?, 1)`,
+        [randomUUID(), saleId, slot.dayOfWeek, slot.startTime, slot.endTime]
       );
     }
   }

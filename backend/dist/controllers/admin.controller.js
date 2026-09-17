@@ -35,7 +35,7 @@ class AdminController {
     async updateUserStatus(req, res, next) {
         try {
             const { isActive } = req.body;
-            const updated = await userRepo.updateActiveStatus(Number(req.params.id), Boolean(isActive));
+            const updated = await userRepo.updateActiveStatus(req.params.id, Boolean(isActive));
             res.status(200).json({
                 success: true,
                 message: updated ? "Cập nhật trạng thái người dùng thành công." : "Không có thay đổi."

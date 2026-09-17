@@ -3,7 +3,7 @@ import { Booking, BookingStatus } from "../types/index.js";
 
 interface MyBookingsTabProps {
   bookings: Booking[];
-  onCancelBooking: (bookingId: number, reason: string) => void;
+  onCancelBooking: (bookingId: string, reason: string) => void;
   onExploreMore: () => void;
 }
 

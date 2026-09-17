@@ -90,7 +90,7 @@ export class AuthService {
     };
   }
 
-  async getUserProfile(userId: number): Promise<UserProfile> {
+  async getUserProfile(userId: string): Promise<UserProfile> {
     const profile = await this.userRepo.findById(userId);
     if (!profile) {
       throw new Error("USER_NOT_FOUND");

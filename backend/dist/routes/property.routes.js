@@ -20,7 +20,7 @@ const createPropertySchema = zod_1.z.object({
     address: zod_1.z.string().min(5),
     district: zod_1.z.string().min(2),
     city: zod_1.z.string().min(2),
-    assigned_sale_id: zod_1.z.number().int().optional(),
+    assigned_sale_id: zod_1.z.string().uuid().optional(),
     mediaUrls: zod_1.z.array(zod_1.z.string().url()).optional()
 });
 exports.propertyRoutes.get("/", propertyController.getProperties);

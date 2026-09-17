@@ -61,7 +61,7 @@ class BookingController {
     }
     async getBookingDetail(req, res, next) {
         try {
-            const detail = await bookingService.getBookingDetail(Number(req.params.id), req.user.userId, req.user.role);
+            const detail = await bookingService.getBookingDetail(req.params.id, req.user.userId, req.user.role);
             res.status(200).json({
                 success: true,
                 data: detail
@@ -73,7 +73,7 @@ class BookingController {
     }
     async updateBookingStatus(req, res, next) {
         try {
-            const updated = await bookingService.updateBookingStatus(Number(req.params.id), req.body.status, req.user.userId, req.user.role, req.body.reason);
+            const updated = await bookingService.updateBookingStatus(req.params.id, req.body.status, req.user.userId, req.user.role, req.body.reason);
             res.status(200).json({
                 success: true,
                 message: `Đã cập nhật trạng thái lịch hẹn sang ${req.body.status}.`,

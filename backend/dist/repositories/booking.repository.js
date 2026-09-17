@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingRepository = void 0;
+const node_crypto_1 = require("node:crypto");
 const database_js_1 = require("../config/database.js");
 class BookingRepository {
     db;
@@ -101,11 +102,13 @@ class BookingRepository {
         return rows;
     }
     async createBookingInTransaction(data, conn) {
+        const bookingId = (0, node_crypto_1.randomUUID)();
         const query = `
-      INSERT INTO bookings (customer_id, sale_id, property_id, booking_date, start_time, end_time, status, customer_note, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, NOW(), NOW())
+      INSERT INTO bookings (id, customer_id, sale_id, property_id, booking_date, start_time, end_time, status, customer_note, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDING', ?, NOW(), NOW())
     `;
         const [result] = await conn.query(query, [
+            bookingId,
             data.customerId,
             data.saleId,
             data.propertyId,
@@ -114,23 +117,22 @@ class BookingRepository {
             data.endTime,
             data.customerNote || null
         ]);
-        const bookingId = result.insertId;
         // Insert initial status history
-        await conn.query(`INSERT INTO booking_status_history (booking_id, old_status, new_status, actor_id, reason, created_at)
-       VALUES (?, NULL, 'PENDING', ?, 'Khách hàng tạo lịch xem nhà mới', NOW())`, [bookingId, data.customerId]);
+        await conn.query(`INSERT INTO booking_status_history (id, booking_id, previous_status, new_status, changed_by, reason, created_at)
+        VALUES (?, ?, NULL, 'PENDING', ?, 'Khách hàng tạo lịch xem nhà mới', NOW())`, [(0, node_crypto_1.randomUUID)(), bookingId, data.customerId]);
         return bookingId;
     }
     async updateStatusInTransaction(bookingId, oldStatus, newStatus, actorId, reason, conn) {
         await conn.query(`UPDATE bookings SET status = ?, updated_at = NOW() WHERE id = ?`, [newStatus, bookingId]);
-        await conn.query(`INSERT INTO booking_status_history (booking_id, old_status, new_status, actor_id, reason, created_at)
-       VALUES (?, ?, ?, ?, ?, NOW())`, [bookingId, oldStatus, newStatus, actorId, reason || null]);
+        await conn.query(`INSERT INTO booking_status_history (id, booking_id, previous_status, new_status, changed_by, reason, created_at)
+       VALUES (?, ?, ?, ?, ?, NOW())`, [(0, node_crypto_1.randomUUID)(), bookingId, oldStatus, newStatus, actorId, reason || null]);
     }
     async getStatusHistory(bookingId) {
         const query = `
-      SELECT h.id, h.booking_id, h.old_status, h.new_status, h.actor_id, 
+      SELECT h.id, h.booking_id, h.previous_status as old_status, h.new_status, h.changed_by as actor_id, 
              u.full_name as actor_name, r.name as actor_role, h.reason, h.created_at
       FROM booking_status_history h
-      LEFT JOIN users u ON h.actor_id = u.id
+      LEFT JOIN users u ON h.changed_by = u.id
       LEFT JOIN roles r ON u.role_id = r.id
       WHERE h.booking_id = ?
       ORDER BY h.created_at ASC

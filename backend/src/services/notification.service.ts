@@ -3,11 +3,11 @@
 export class NotificationService {
   constructor(private notificationRepo: NotificationRepository = new NotificationRepository()) {}
 
-  async getNotifications(userId: number) {
+  async getNotifications(userId: string) {
     return this.notificationRepo.findByUserId(userId);
   }
 
-  async markAsRead(id: number, userId: number) {
+  async markAsRead(id: string, userId: string) {
     return this.notificationRepo.markAsRead(id, userId);
   }
 }

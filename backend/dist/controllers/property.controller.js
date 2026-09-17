@@ -35,7 +35,7 @@ class PropertyController {
     }
     async getPropertyById(req, res, next) {
         try {
-            const property = await propertyService.getPropertyById(Number(req.params.id));
+            const property = await propertyService.getPropertyById(req.params.id);
             res.status(200).json({
                 success: true,
                 data: property

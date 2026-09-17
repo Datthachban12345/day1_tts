@@ -5,7 +5,7 @@ export type BookingStatus = "PENDING" | "CONFIRMED" | "REJECTED" | "CANCELLED" |
 export type PropertyType = "APARTMENT" | "HOUSE" | "VILLA" | "TOWNHOUSE";
 
 export interface Property {
-  id: number;
+  id: string;
   title: string;
   propertyType: PropertyType;
   price: number; // in VNĐ
@@ -23,7 +23,7 @@ export interface Property {
   isVip?: boolean;
   hasFreeSlotToday?: boolean;
   assignedSale: {
-    id: number;
+    id: string;
     name: string;
     phone: string;
     avatar: string;
@@ -33,7 +33,7 @@ export interface Property {
 }
 
 export interface BookingStatusHistory {
-  id: number;
+  id: string;
   oldStatus: BookingStatus | null;
   newStatus: BookingStatus;
   actorRole: UserRole;
@@ -43,17 +43,17 @@ export interface BookingStatusHistory {
 }
 
 export interface Booking {
-  id: number;
+  id: string;
   bookingCode: string;
-  propertyId: number;
+  propertyId: string;
   propertyTitle: string;
   propertyAddress: string;
   propertyImage: string;
   propertyPrice: string;
-  customerId: number;
+  customerId: string;
   customerName: string;
   customerPhone: string;
-  saleId: number;
+  saleId: string;
   saleName: string;
   salePhone: string;
   bookingDate: string; // YYYY-MM-DD
