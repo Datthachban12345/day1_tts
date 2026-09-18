@@ -8,25 +8,28 @@ interface AuthPageProps {
   onAuthenticated: (role: UserRole) => void;
 }
 
-// ─── Demo Accounts for Instant 1-Click Evaluation ──────────────────────────────
+// ─── Demo Accounts ──────────────────────────────────────────────────────────────
 const DEMO_ACCOUNTS = [
   {
     role: "CUSTOMER" as UserRole,
-    label: "👤 Khách Hàng (Demo)",
+    label: "Khách Hàng",
+    description: "Demo",
     email: "customer.minh@gmail.com",
     password: "password123",
     badgeColor: "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100",
   },
   {
     role: "SALE" as UserRole,
-    label: "👔 Chuyên Viên Sales",
+    label: "Sales",
+    description: "Chuyên viên",
     email: "sale.nam@homebooking.vn",
     password: "password123",
     badgeColor: "bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100",
   },
   {
     role: "ADMIN" as UserRole,
-    label: "👑 Quản Trị Viên (Admin)",
+    label: "Admin",
+    description: "Quản trị",
     email: "admin@homebooking.vn",
     password: "password123",
     badgeColor: "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100",
@@ -74,7 +77,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
     if (score <= 1) return { score: 1, text: "Yếu", color: "bg-rose-500", width: "25%" };
     if (score === 2) return { score: 2, text: "Trung bình", color: "bg-amber-500", width: "50%" };
     if (score === 3 || score === 4) return { score: 3, text: "Khá", color: "bg-blue-500", width: "75%" };
-    return { score: 4, text: "Rất mạnh", color: "bg-emerald-500", width: "100%" };
+    return { score: 4, text: "Mạnh", color: "bg-emerald-500", width: "100%" };
   }, [password]);
 
   // Handle 1-click Demo Fill
@@ -132,8 +135,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
       <div className="fixed bottom-0 right-1/4 w-96 h-96 bg-rose-100/50 rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="mx-auto grid min-h-[620px] max-w-5xl w-full overflow-hidden rounded-3xl bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-slate-200/80 lg:grid-cols-[1fr_1.05fr]">
-        
-        {/* ── LEFT PANE: BRANDING & HERO EXPERIENCE ── */}
+
+        {/* ── LEFT PANE: BRANDING & HERO ── */}
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-red-600 via-rose-600 to-red-700 p-10 text-white lg:flex lg:flex-col lg:justify-between">
           {/* Subtle Geometric Overlay */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -146,21 +149,21 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                 B
               </div>
               <div>
-                <div className="text-xl font-extrabold tracking-tight text-white">
+                <div className="text-xl font-bold tracking-tight text-white">
                   Batdongsan<span className="text-red-200">.booking</span>
                 </div>
-                <div className="text-xs text-red-100 font-medium">
+                <div className="text-xs text-red-100">
                   Đặt lịch xem nhà trực tuyến hàng đầu
                 </div>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs font-bold text-white shadow-xs">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-xs text-white shadow-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
               Nền tảng xem nhà thế hệ mới
             </div>
 
-            <h1 className="text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white">
+            <h1 className="text-3xl lg:text-4xl font-bold tracking-tight leading-tight text-white">
               Tìm căn nhà mơ ước.<br />
               <span className="text-red-100">
                 Đặt lịch xem chỉ trong 60 giây.
@@ -181,8 +184,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                 <div key={item.title} className="flex items-start gap-3 p-3 rounded-2xl bg-white/10 border border-white/15 backdrop-blur-xs">
                   <span className="text-base shrink-0 mt-0.5">{item.icon}</span>
                   <div>
-                    <div className="text-xs font-bold text-white">{item.title}</div>
-                    <div className="text-[11px] text-red-100">{item.desc}</div>
+                    <div className="text-sm font-medium text-white">{item.title}</div>
+                    <div className="text-xs text-red-100">{item.desc}</div>
                   </div>
                 </div>
               ))}
@@ -192,36 +195,36 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
           {/* Bottom Stats */}
           <div className="relative z-10 pt-6 border-t border-white/20 grid grid-cols-3 gap-3 text-left">
             <div>
-              <div className="text-2xl font-black text-white">5,000+</div>
-              <div className="text-[10px] uppercase font-bold text-red-200">Lượt Xem Nhà</div>
+              <div className="text-2xl font-bold text-white">5,000+</div>
+              <div className="text-[10px] text-red-200">Lượt Xem Nhà</div>
             </div>
             <div>
-              <div className="text-2xl font-black text-white">99.8%</div>
-              <div className="text-[10px] uppercase font-bold text-red-200">Đúng Giờ Hẹn</div>
+              <div className="text-2xl font-bold text-white">99.8%</div>
+              <div className="text-[10px] text-red-200">Đúng Giờ Hẹn</div>
             </div>
             <div>
-              <div className="text-2xl font-black text-white">4.9/5</div>
-              <div className="text-[10px] uppercase font-bold text-red-200">Đánh Giá Sales</div>
+              <div className="text-2xl font-bold text-white">4.9/5</div>
+              <div className="text-[10px] text-red-200">Đánh Giá Sales</div>
             </div>
           </div>
         </section>
 
-        {/* ── RIGHT PANE: CRISP AUTH CARD ── */}
+        {/* ── RIGHT PANE: AUTH FORM ── */}
         <section className="flex flex-col justify-between p-6 sm:p-10 lg:p-11 overflow-y-auto bg-white">
           <div className="mx-auto w-full max-w-md my-auto space-y-5">
-            
+
             {/* Header */}
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-widest text-red-600">
+                <span className="text-xs font-medium text-red-600">
                   {mode === "login" ? "Chào mừng trở lại" : "Khởi tạo tài khoản"}
                 </span>
-                <span className="text-[11px] text-slate-400 font-medium">Bảo mật SSL 256-bit</span>
+                <span className="text-xs text-slate-400">Bảo mật SSL 256-bit</span>
               </div>
-              <h2 className="mt-1 text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                {mode === "login" ? "Đăng Nhập Hệ Thống" : "Đăng Ký Tài Khoản"}
+              <h2 className="mt-1 text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
+                {mode === "login" ? "Đăng Nhập" : "Đăng Ký Tài Khoản"}
               </h2>
-              <p className="mt-1 text-xs sm:text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500">
                 {mode === "login"
                   ? "Nhập thông tin hoặc chọn tài khoản Demo bên dưới."
                   : "Đăng ký tài khoản để bắt đầu đặt lịch xem nhà miễn phí."}
@@ -229,13 +232,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
             </div>
 
             {/* Tab Pill Switcher */}
-            <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 text-xs sm:text-sm font-bold border border-slate-200/70">
+            <div className="grid grid-cols-2 rounded-2xl bg-slate-100 p-1 text-sm font-medium border border-slate-200/70">
               <button
                 type="button"
                 onClick={() => switchMode("login")}
-                className={`py-2.5 rounded-xl transition-all ${
+                className={`py-2.5 rounded-xl transition-all duration-150 ${
                   mode === "login"
-                    ? "bg-white text-slate-900 shadow-xs font-extrabold"
+                    ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -244,9 +247,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
               <button
                 type="button"
                 onClick={() => switchMode("register")}
-                className={`py-2.5 rounded-xl transition-all ${
+                className={`py-2.5 rounded-xl transition-all duration-150 ${
                   mode === "register"
-                    ? "bg-white text-slate-900 shadow-xs font-extrabold"
+                    ? "bg-white text-slate-900 shadow-sm"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
@@ -254,12 +257,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
               </button>
             </div>
 
-            {/* 1-Click Demo Accounts Container */}
+            {/* Demo Accounts */}
             {mode === "login" && (
               <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-                <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                  <span>⚡ ĐĂNG NHẬP NHANH (DEMO ROLE):</span>
-                  <span className="text-[10px] text-red-600 font-bold">1-Click Auto Fill</span>
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>Đăng nhập nhanh với Demo:</span>
+                  <span className="text-xs text-red-600">1-Click</span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                   {DEMO_ACCOUNTS.map((demo) => (
@@ -267,10 +270,10 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                       key={demo.role}
                       type="button"
                       onClick={() => handleFillDemo(demo)}
-                      className={`px-2.5 py-2 rounded-xl text-left border text-xs font-bold transition-all flex flex-col justify-between ${demo.badgeColor}`}
+                      className={`px-2.5 py-2 rounded-xl text-left border text-xs transition-all flex flex-col justify-between ${demo.badgeColor}`}
                     >
-                      <span className="truncate">{demo.label}</span>
-                      <span className="text-[10px] opacity-75 font-normal truncate mt-0.5">{demo.email.split("@")[0]}</span>
+                      <span className="font-medium truncate">{demo.label}</span>
+                      <span className="text-[10px] text-slate-500 truncate mt-0.5">{demo.description}</span>
                     </button>
                   ))}
                 </div>
@@ -282,40 +285,42 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
             {success && <InlineAlert type="success" message={success} onDismiss={() => setSuccess(null)} />}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "register" && (
                 <>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Họ và tên *
+                  {/* Full Name */}
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Họ và tên
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">👤</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">👤</span>
                       <input
                         required
                         minLength={2}
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm focus:bg-white focus:border-red-500 focus:ring-3 focus:ring-red-100 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all outline-none"
                         placeholder="Nguyễn Văn A"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                      Số điện thoại *
+                  {/* Phone */}
+                  <div className="space-y-1.5">
+                    <label className="block text-sm font-medium text-slate-700">
+                      Số điện thoại
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">📞</span>
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">📞</span>
                       <input
                         required
                         minLength={8}
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm focus:bg-white focus:border-red-500 focus:ring-3 focus:ring-red-100 transition-all outline-none"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all outline-none"
                         placeholder="0912 345 678"
                       />
                     </div>
@@ -324,67 +329,67 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
               )}
 
               {/* Email */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Địa chỉ Email *
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-slate-700">
+                  Địa chỉ Email
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">✉️</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">✉️</span>
                   <input
                     required
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm focus:bg-white focus:border-red-500 focus:ring-3 focus:ring-red-100 transition-all outline-none"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all outline-none"
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               {/* Password */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Mật khẩu *
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Mật khẩu
                   </label>
                   {mode === "login" && (
                     <button
                       type="button"
                       onClick={() => setShowForgotModal(true)}
-                      className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline"
+                      className="text-sm font-medium text-red-600 hover:text-red-700 hover:underline"
                     >
                       Quên mật khẩu?
                     </button>
                   )}
                 </div>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">🔒</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔒</span>
                   <input
                     required
                     minLength={6}
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-10 pr-11 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm focus:bg-white focus:border-red-500 focus:ring-3 focus:ring-red-100 transition-all outline-none font-medium"
+                    className="w-full pl-10 pr-11 py-2.5 bg-slate-50/70 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-red-500 focus:ring-2 focus:ring-red-100 transition-all outline-none"
                     placeholder="Tối thiểu 6 ký tự"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold py-1 px-1.5 rounded-md hover:bg-slate-100 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-600 px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
                   >
                     {showPassword ? "Ẩn" : "Hiện"}
                   </button>
                 </div>
 
-                {/* Password Strength Meter (Register Mode) */}
+                {/* Password Strength Meter */}
                 {mode === "register" && password.length > 0 && (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-center justify-between text-[11px]">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-500">Độ mạnh:</span>
-                      <span className="font-bold text-slate-700">{passwordStrength.text}</span>
+                      <span className="font-medium text-slate-700">{passwordStrength.text}</span>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
                       <div
                         className={`h-full transition-all duration-300 ${passwordStrength.color}`}
                         style={{ width: passwordStrength.width }}
@@ -394,31 +399,31 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                 )}
               </div>
 
-              {/* Confirm Password (Register Mode) */}
+              {/* Confirm Password */}
               {mode === "register" && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Xác nhận lại mật khẩu *
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium text-slate-700">
+                    Xác nhận mật khẩu
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400 text-sm">🔒</span>
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔒</span>
                     <input
                       required
                       minLength={6}
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full pl-10 pr-11 py-2.5 bg-slate-50/70 rounded-xl border text-sm focus:bg-white focus:ring-3 transition-all outline-none ${
+                      className={`w-full pl-10 pr-11 py-2.5 bg-slate-50/70 rounded-xl border text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 transition-all outline-none ${
                         confirmPassword && password !== confirmPassword
                           ? "border-rose-300 focus:border-rose-500 focus:ring-rose-100"
                           : "border-slate-200 focus:border-red-500 focus:ring-red-100"
                       }`}
-                      placeholder="Nhập lại mật khẩu vừa tạo"
+                      placeholder="Nhập lại mật khẩu"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 text-xs font-bold py-1 px-1.5 rounded-md hover:bg-slate-100 transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 hover:text-slate-600 px-1.5 py-0.5 rounded hover:bg-slate-100 transition-colors"
                     >
                       {showConfirmPassword ? "Ẩn" : "Hiện"}
                     </button>
@@ -430,9 +435,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
               )}
 
               {/* Checkboxes */}
-              <div className="pt-0.5">
+              <div>
                 {mode === "login" ? (
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-600">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-sm text-slate-600">
                     <input
                       type="checkbox"
                       checked={rememberMe}
@@ -442,7 +447,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                     <span>Duy trì đăng nhập trên thiết bị này</span>
                   </label>
                 ) : (
-                  <label className="flex items-start gap-2 cursor-pointer text-xs text-slate-600">
+                  <label className="flex items-start gap-2.5 cursor-pointer text-sm text-slate-600">
                     <input
                       type="checkbox"
                       checked={agreeTerms}
@@ -451,11 +456,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                     />
                     <span>
                       Tôi đồng ý với{" "}
-                      <a href="#" className="font-bold text-red-600 hover:underline">
+                      <a href="#" className="font-medium text-red-600 hover:underline">
                         Điều khoản dịch vụ
                       </a>{" "}
                       và{" "}
-                      <a href="#" className="font-bold text-red-600 hover:underline">
+                      <a href="#" className="font-medium text-red-600 hover:underline">
                         Chính sách bảo mật
                       </a>.
                     </span>
@@ -463,11 +468,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                 )}
               </div>
 
-              {/* Submit CTA */}
+              {/* Submit Button */}
               <button
                 disabled={isSubmitting}
                 type="submit"
-                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl shadow-md shadow-red-600/20 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
+                className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-md shadow-red-600/20 transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-wait"
               >
                 {isSubmitting ? (
                   <>
@@ -475,29 +480,28 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                     <span>Đang xử lý...</span>
                   </>
                 ) : mode === "login" ? (
-                  "Đăng Nhập Ngay →"
+                  "Đăng Nhập"
                 ) : (
-                  "Tạo Tài Khoản Khách Hàng →"
+                  "Tạo Tài Khoản"
                 )}
               </button>
             </form>
 
             {/* Social Divider */}
-            <div className="relative pt-1">
+            <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-200" />
               </div>
-              <div className="relative flex justify-center text-[10px] uppercase font-bold">
-                <span className="bg-white px-3 text-slate-400">Hoặc tiếp tục với</span>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-xs text-slate-400">Hoặc tiếp tục với</span>
               </div>
             </div>
 
             {/* Social Buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => handleFillDemo(DEMO_ACCOUNTS[0])}
-                className="flex items-center justify-center gap-2 py-2 px-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-sm font-medium text-slate-700 transition-colors"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -509,19 +513,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
               </button>
               <button
                 type="button"
-                onClick={() => handleFillDemo(DEMO_ACCOUNTS[0])}
-                className="flex items-center justify-center gap-2 py-2 px-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-xs font-bold text-slate-700 transition-colors"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-sm font-medium text-slate-700 transition-colors"
               >
-                <svg className="w-4 h-4 fill-current text-slate-900" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.92-2.85-.9.04-1.99.6-2.64 1.36-.58.67-1.08 1.74-.95 2.77 1 .08 2.04-.51 2.67-1.28z"/>
                 </svg>
-                Apple ID
+                Apple
               </button>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="text-center text-[11px] text-slate-400 pt-4 border-t border-slate-100">
+          <div className="text-center text-xs text-slate-400 pt-4 border-t border-slate-100">
             © 2026 Batdongsan.booking · Home Viewing Booking System
           </div>
         </section>
@@ -530,12 +533,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
       {/* ── FORGOT PASSWORD MODAL ── */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-base text-slate-900">Khôi Phục Mật Khẩu</h3>
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-100 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg text-slate-900">Khôi Phục Mật Khẩu</h3>
               <button
                 onClick={() => { setShowForgotModal(false); setForgotSubmitted(false); }}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm"
               >
                 ✕
               </button>
@@ -543,16 +546,16 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
 
             {forgotSubmitted ? (
               <div className="text-center py-4 space-y-3">
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-2xl mx-auto">
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mx-auto">
                   ✓
                 </div>
-                <h4 className="font-bold text-slate-900">Đã gửi hướng dẫn khôi phục!</h4>
-                <p className="text-xs text-slate-500">
+                <h4 className="font-medium text-slate-900">Đã gửi hướng dẫn khôi phục!</h4>
+                <p className="text-sm text-slate-500">
                   Vui lòng kiểm tra hòm thư <strong>{forgotEmail}</strong> để tiến hành đặt lại mật khẩu.
                 </p>
                 <button
                   onClick={() => { setShowForgotModal(false); setForgotSubmitted(false); }}
-                  className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-xl text-xs"
+                  className="w-full py-2.5 bg-slate-900 text-white font-medium rounded-xl text-sm hover:bg-slate-800"
                 >
                   Quay lại đăng nhập
                 </button>
@@ -565,7 +568,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                 }}
                 className="space-y-3"
               >
-                <p className="text-xs text-slate-500">
+                <p className="text-sm text-slate-500">
                   Nhập địa chỉ email liên kết với tài khoản của bạn để nhận liên kết đặt lại mật khẩu.
                 </p>
                 <input
@@ -574,19 +577,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ initialMode, onAuthenticated
                   value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-red-500"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"
                 />
-                <div className="flex gap-2 pt-1">
+                <div className="flex gap-3 pt-1">
                   <button
                     type="button"
                     onClick={() => setShowForgotModal(false)}
-                    className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-semibold rounded-xl text-xs hover:bg-slate-50"
+                    className="flex-1 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl text-sm hover:bg-slate-50"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs hover:bg-red-700"
+                    className="flex-1 py-2.5 bg-red-600 text-white font-medium rounded-xl text-sm hover:bg-red-700"
                   >
                     Gửi liên kết
                   </button>
